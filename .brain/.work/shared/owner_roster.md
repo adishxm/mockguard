@@ -1,14 +1,13 @@
-# MockGuard Owner Roster
+# MockGuard Owner Roster & Responsibility Matrix
 
-Fill this before implementation. Names are intentionally blank in the planning archive.
-
-| Workstream | Owner | Reviewer | Deadline | Status |
+| Workstream | Owner | Reviewer | Phase / Gate | Status |
 |---|---|---|---|---|
-| Contracts and report schema | TBD | TBD | TBD | PLANNED |
-| Fixture and baseline runner | TBD | TBD | TBD | PLANNED |
-| Static analysis | TBD | TBD | TBD | PLANNED |
-| Mutation adapter | TBD | TBD | TBD | PLANNED |
-| Correlation and reports | TBD | TBD | TBD | PLANNED |
-| Evaluation corpus | TBD | TBD | TBD | PLANNED |
-| Demo and README | TBD | TBD | TBD | PLANNED |
-| Security/release review | Worker 03 | Worker 01 | Phase 0/1 | ACTIVE |
+| **Contracts and report schema** | Worker 01 / Worker 03 | Worker 02 | P0 | **COMPLETED & VERIFIED** |
+| **Fixture and baseline runner** | Worker 01 | Worker 03 | P1 / P2 | **COMPLETED & VERIFIED** |
+| **Static AST rule analysis** | Worker 02 | Worker 01 | P2 | **COMPLETED & VERIFIED** |
+| **Mutation adapter & engine** | Worker 02 / Worker 01 | Worker 03 | P3 | **COMPLETED & VERIFIED** |
+| **Correlation and reports** | Worker 02 / Worker 01 | Worker 03 | P4 | **COMPLETED & VERIFIED** |
+| **Evaluation corpus & benchmarks** | Worker 02 | Worker 03 | P5 / P6 | **COMPLETED & VERIFIED** |
+| **Demo, CLI testing & README** | Worker 04 / Worker 01 | All Workers | P7 | **COMPLETED & VERIFIED** |
+| **Security, QA & release check** | Worker 03 | All Workers | P8 | **COMPLETED & VERIFIED** |
+| **Pitch deck, narrative & lock** | Worker 04 | All Workers | P9 | **COMPLETED & VERIFIED** |
