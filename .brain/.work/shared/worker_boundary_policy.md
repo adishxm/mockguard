@@ -21,3 +21,4 @@ If any request involves an agent crossing from Worker A's territory into Worker 
 2. **Gate 2**: Warn of handoff/contract disruption and demand a second explicit confirmation before any file modification or task execution.
 
 No automated bypass of this double gate is permitted.
+

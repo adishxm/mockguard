@@ -28,8 +28,6 @@ jobs:
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
 
       - name: Verify Environment & Security Controls
         run: |
@@ -43,18 +41,21 @@ jobs:
           elif [ -f package.json ]; then
             npm install --ignore-scripts
           else
-            echo "package.json not yet initialized by Builder 1; skipping dependency step."
+            echo "package.json not yet initialized by Builder 1; skipping dependency installation."
           fi
 
       - name: Lint and Static Schema Verification
         run: |
           if [ -f package.json ] && npm run | grep -q "lint"; then
             npm run lint
+          else
+            echo "Lint script not configured yet; skipping."
           fi
 
       - name: Execute Test Suite
         run: |
           if [ -f package.json ] && npm run | grep -q "test"; then
             npm test -- --ci --maxWorkers=2
+          else
+            echo "Test suite not configured yet; skipping."
           fi
-

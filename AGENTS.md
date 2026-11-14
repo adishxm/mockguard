@@ -41,3 +41,4 @@ Even if the user confirms Step 1, the agent must ask a **second time** before an
 ## 3. Remote Push Policy
 - Agents must **never** execute `git push` autonomously or unprompted.
 - `git push` requires an explicit, direct user prompt instructing the agent to push.
+
