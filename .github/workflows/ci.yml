@@ -55,7 +55,7 @@ jobs:
       - name: Execute Test Suite
         run: |
           if [ -f package.json ] && npm run | grep -q "test"; then
-            npm test -- --ci --maxWorkers=2
+            npm test
           else
             echo "Test suite not configured yet; skipping."
           fi

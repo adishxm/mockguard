@@ -25,8 +25,11 @@ if (files.length === 0) {
   process.exit(1);
 }
 
-// Filter out arguments not recognized by node --test (e.g., Jest specific flags like --maxWorkers)
-const extraArgs = process.argv.slice(2).filter(arg => !arg.startsWith('--maxWorkers'));
+// Filter out Jest/Mocha specific flags not recognized by node --test (e.g. --ci, --maxWorkers)
+const unsupportedFlags = new Set(['--ci', '--watchAll', '--colors', '--no-colors']);
+const extraArgs = process.argv.slice(2).filter(
+  arg => !unsupportedFlags.has(arg) && !arg.startsWith('--maxWorkers')
+);
 const nodeArgs = ['--test', ...files, ...extraArgs];
 
 const res = spawnSync(process.execPath, nodeArgs, {
