@@ -7,7 +7,7 @@
 - **Date**: 2026-11-14
 - **Target File**: `src/mutation/orchestrator.ts`
 - **Target Interface**: `OrchestratorOptions`, `MutationOrchestrator.run()`
-- **Status**: **PENDING REVIEW BY WORKER 02**
+- **Status**: **REVIEWED — CHANGES REQUESTED**
 
 ---
 
@@ -218,4 +218,38 @@ Pass rate: **33/33 tests passing (100%)**.
 
 ## 6. Handoff Status
 - **Worker 01 State**: Edits to `src/mutation/` ceased. Platform contracts frozen.
-- **Worker 02 Action Required**: Review changes in `src/mutation/orchestrator.ts`, confirm compatibility with Phase 2/3 mutation pipeline, and acknowledge receipt.
+- **Worker 02 Review**: Complete.
+- **Review Decision**: **REQUEST CHANGES**
+
+---
+
+## 7. Formal Worker 02 Review Findings & Required Changes
+
+**Reviewer:** Worker 02 (Static Analysis, Mutation, Attribution, and Evaluation)  
+**Date:** 2026-11-14  
+**Verdict:** **REQUEST CHANGES**
+
+### Technical Review Findings:
+
+1. **Concurrency & Execution Isolation**:
+   - *Finding*: Concurrency pool (`Math.max(1, options.concurrency ?? 1)`) works well for pure subprocesses, but when StrykerJS or AST mutators modify on-disk source files, parallel execution without filesystem sandboxing will cause test runner race conditions.
+   - *Required Change*: Default `concurrency` must remain `1` until Worker 02 implements sandboxed workspace copies. The orchestrator must support delegating concurrency control to StrykerJS when the Stryker adapter is active.
+
+2. **Global Timeout & Cancellation**:
+   - *Finding*: `totalTimeoutMs` global ceiling is approved and critical for CI stability.
+   - *Required Change*: When global timeout fires, in-flight mutants must be distinguished from unexecuted queued mutants. Mutants aborted mid-flight should be marked `CANCELLED`, while remaining queued mutants that never began execution should be marked `SKIPPED` or `PENDING` rather than inflating evaluated mutant counts.
+
+3. **Error Containment & Status Mapping (`UNSUPPORTED` vs `RUNTIME_ERROR`)**:
+   - *Finding*: Coercing adapter-level throws into `UNSUPPORTED` conflates AST/mutator incompatibility with test runner / process infrastructure crashes.
+   - *Required Change*: Adapter execution exceptions must be recorded as `RUNTIME_ERROR` (as proposed in `.brain/.work/proposals/contract_gap_mutant_status.md`). `UNSUPPORTED` should be reserved for mutators that the engine cannot apply to a specific AST node.
+
+4. **Integration with Proposed Statuses (`NO_COVERAGE`, `RUNTIME_ERROR`, `IGNORED`)**:
+   - *Finding*: The orchestrator summary switch/case lacks handling for `NO_COVERAGE`, `RUNTIME_ERROR`, and `IGNORED`.
+   - *Required Change*: Update `OrchestrationSummary` and outcome parsing in the orchestrator to track `noCoverage`, `runtimeErrors`, and `ignored`. Mutants with `NO_COVERAGE` must be included in the denominator of mutation score calculations, while `RUNTIME_ERROR` and `IGNORED` must be excluded.
+
+5. **Attribution Data Preservation**:
+   - *Finding*: `MutantExecutionResult` records duration and outcome, but lacks test execution detail.
+   - *Required Change*: Preserve optional `killedBy?: string[]` and `testsRan?: string[]` fields in `MutantExecutionResult` so Worker 02's Phase 4 Attribution Engine can link killed mutants to individual unit tests.
+
+### Next Action:
+Worker 02 will take ownership of updating `src/mutation/orchestrator.ts` and `src/contracts/outcomes.ts` to implement these required changes during Worker 02 Phase 2/3 execution. Worker 01 remains frozen on `src/mutation/`.
