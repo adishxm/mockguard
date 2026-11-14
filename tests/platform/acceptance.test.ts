@@ -138,15 +138,19 @@ test('11. Missing executable error handled', async () => {
   assert.ok(res.error);
 });
 
-test('12. Output-size limit enforced', async () => {
+test('12. Combined Output-size limit enforced', async () => {
   const supervisor = new BoundedProcessSupervisor();
-  // Generate 50KB of output, capped at 1024 bytes
-  const res = await supervisor.execute(process.execPath, ['-e', 'console.log("A".repeat(50000));'], {
+  // Generate 50KB stdout and 50KB stderr, capped at total 1024 bytes
+  const res = await supervisor.execute(process.execPath, [
+    '-e',
+    'console.log("A".repeat(50000)); console.error("B".repeat(50000));'
+  ], {
     maxOutputBytes: 1024
   });
 
   assert.strictEqual(res.outputTruncated, true);
-  assert.strictEqual(res.stdout.length, 1024);
+  const totalLength = res.stdout.length + res.stderr.length;
+  assert.ok(totalLength <= 1024);
 });
 
 test('13. Child-process cleanup on cancellation', async () => {
@@ -286,4 +290,32 @@ test('20. Secret redaction and artifact path containment', () => {
   assert.ok(filePath.startsWith(manager.getRunDir()));
 
   manager.cleanup();
+});
+
+test('21. Regression: Supervisor resets cancellation state between executions', async () => {
+  const supervisor = new BoundedProcessSupervisor();
+  // First run: trigger cancellation
+  setTimeout(() => supervisor.cancel(), 50);
+  const res1 = await supervisor.execute(process.execPath, ['-e', 'setTimeout(() => {}, 5000);']);
+  assert.strictEqual(res1.cancelled, true);
+
+  // Second run on same instance: should NOT be cancelled
+  const res2 = await supervisor.execute(process.execPath, ['-e', 'console.log("OK");']);
+  assert.strictEqual(res2.cancelled, false);
+  assert.strictEqual(res2.exitCode, 0);
+  assert.ok(res2.stdout.includes('OK'));
+});
+
+test('22. Regression: ReportBuilder captures git commit SHA', () => {
+  const project = ProjectDiscovery.discover(process.cwd());
+  const command = ConfigResolver.resolve(project);
+  const report = ReportBuilder.build({
+    project,
+    command,
+    baseline: { status: 'PASS', testsPassed: 1, testsTotal: 1 }
+  });
+
+  // Verify commit is a 40-character git SHA
+  assert.ok(report.project.commit);
+  assert.match(report.project.commit, /^[0-9a-f]{40}$/);
 });

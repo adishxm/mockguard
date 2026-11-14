@@ -9,12 +9,14 @@
     "mockguard": "dist/cli/index.js"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc --watch",
-    "test": "node --test dist/tests/**/*.test.js"
+    "build": "tsc -p tsconfig.json",
+    "build:test": "tsc -p tsconfig.test.json",
+    "pretest": "npm run build:test",
+    "test": "node scripts/test-runner.js",
+    "watch": "tsc -p tsconfig.test.json --watch"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

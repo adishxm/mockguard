@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 import {
   MockGuardReport,
   BaselineResult,
@@ -12,6 +13,20 @@ import { ResolvedTestCommand } from '../platform/config-resolver.js';
 import { OrchestrationSummary } from '../mutation/orchestrator.js';
 
 export class ReportBuilder {
+  private static resolveGitCommit(cwd: string): string | null {
+    try {
+      const sha = execSync('git rev-parse HEAD', {
+        cwd,
+        stdio: ['ignore', 'pipe', 'ignore'],
+        encoding: 'utf-8',
+        timeout: 3000,
+      }).trim();
+      return sha || null;
+    } catch {
+      return null;
+    }
+  }
+
   public static build(params: {
     project: DiscoveredProject;
     command: ResolvedTestCommand;
@@ -65,6 +80,8 @@ export class ReportBuilder {
       verdict = 'UNVERIFIED';
     }
 
+    const commitSha = this.resolveGitCommit(project.projectRoot);
+
     return {
       schemaVersion: 'mockguard.report.v1',
       tool: {
@@ -73,7 +90,7 @@ export class ReportBuilder {
       },
       project: {
         root: project.projectRoot,
-        commit: null,
+        commit: commitSha,
       },
       runner: {
         name: 'jest',
@@ -123,6 +140,7 @@ export class ReportBuilder {
     lines.push('               MOCKGUARD VERIFICATION REPORT          ');
     lines.push('======================================================');
     lines.push(`Verdict:         ${report.verdict}`);
+    lines.push(`Commit:          ${report.project.commit || 'unknown'}`);
     lines.push(`Baseline:        ${report.baseline.status} (${report.baseline.testsPassed}/${report.baseline.testsTotal} tests passed)`);
 
     if (report.baseline.status !== 'PASS') {

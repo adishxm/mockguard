@@ -26,11 +26,40 @@ export class BoundedProcessSupervisor {
 
   public cancel(): void {
     this.isCancelled = true;
-    if (this.activeChild && !this.activeChild.killed) {
+    this.killChildTree(this.activeChild, 'SIGTERM');
+  }
+
+  private killChildTree(child: ChildProcess | null, signal: NodeJS.Signals): void {
+    if (!child || child.killed) return;
+    const pid = child.pid;
+    if (!pid) return;
+
+    if (process.platform === 'win32') {
       try {
-        this.activeChild.kill('SIGTERM');
+        // Windows process-tree termination
+        spawn('taskkill', ['/pid', pid.toString(), '/T', '/F'], {
+          stdio: 'ignore',
+          windowsHide: true,
+        });
       } catch {
-        // Process might have already exited
+        try {
+          child.kill(signal);
+        } catch {
+          // Ignored
+        }
+      }
+    } else {
+      try {
+        // Process group / direct termination on POSIX
+        if (child.pid) {
+          process.kill(-child.pid, signal);
+        }
+      } catch {
+        try {
+          child.kill(signal);
+        } catch {
+          // Process already gone
+        }
       }
     }
   }
@@ -40,6 +69,9 @@ export class BoundedProcessSupervisor {
     args: string[] = [],
     options: SupervisorOptions = {}
   ): Promise<SupervisorResult> {
+    // Reset cancellation state per run to allow clean supervisor reuse
+    this.isCancelled = false;
+
     const startTime = Date.now();
     const timeoutMs = options.timeoutMs ?? 60_000;
     const maxOutputBytes = options.maxOutputBytes ?? 10 * 1024 * 1024;
@@ -47,15 +79,19 @@ export class BoundedProcessSupervisor {
 
     let timedOut = false;
     let outputTruncated = false;
-    let stdoutTotalBytes = 0;
-    let stderrTotalBytes = 0;
+    let combinedTotalBytes = 0;
     const stdoutChunks: Buffer[] = [];
     const stderrChunks: Buffer[] = [];
 
-    // Filter environment variables to prevent uncontrolled secret leaks
+    // Filter environment variables: allowlist safe system & CI variables
     const safeEnv: NodeJS.ProcessEnv = {
       PATH: process.env.PATH || '',
       Path: process.env.Path || '',
+      SYSTEMROOT: process.env.SYSTEMROOT || process.env.SystemRoot || '',
+      SystemRoot: process.env.SystemRoot || process.env.SYSTEMROOT || '',
+      WINDIR: process.env.WINDIR || '',
+      LANG: process.env.LANG || 'en_US.UTF-8',
+      LC_ALL: process.env.LC_ALL || '',
       NODE_ENV: options.env?.NODE_ENV || process.env.NODE_ENV || 'test',
       HOME: process.env.HOME || '',
       USERPROFILE: process.env.USERPROFILE || '',
@@ -67,6 +103,7 @@ export class BoundedProcessSupervisor {
 
     return new Promise<SupervisorResult>((resolve) => {
       let timeoutHandle: NodeJS.Timeout | null = null;
+      let forceKillHandle: NodeJS.Timeout | null = null;
       let settled = false;
 
       const finish = (
@@ -80,6 +117,10 @@ export class BoundedProcessSupervisor {
         if (timeoutHandle) {
           clearTimeout(timeoutHandle);
           timeoutHandle = null;
+        }
+        if (forceKillHandle) {
+          clearTimeout(forceKillHandle);
+          forceKillHandle = null;
         }
 
         this.activeChild = null;
@@ -105,61 +146,45 @@ export class BoundedProcessSupervisor {
           shell,
           stdio: ['ignore', 'pipe', 'pipe'],
           windowsHide: true,
+          detached: process.platform !== 'win32', // Allows process-group signaling on POSIX
         });
 
         this.activeChild = child;
 
-        // Apply timeout
+        // Apply timeout with SIGTERM -> SIGKILL escalation
         if (timeoutMs > 0) {
           timeoutHandle = setTimeout(() => {
             timedOut = true;
-            if (!child.killed) {
-              try {
-                child.kill('SIGTERM');
-                // Force kill if not exited after grace period
-                setTimeout(() => {
-                  if (!child.killed) {
-                    try {
-                      child.kill('SIGKILL');
-                    } catch {
-                      // Ignored
-                    }
-                  }
-                }, 2000);
-              } catch {
-                // Process already gone
-              }
-            }
+            this.killChildTree(child, 'SIGTERM');
+
+            // Two-phase escalation: force kill with SIGKILL if still active after 1.5s
+            forceKillHandle = setTimeout(() => {
+              this.killChildTree(child, 'SIGKILL');
+            }, 1500);
           }, timeoutMs);
         }
 
-        child.stdout?.on('data', (chunk: Buffer) => {
-          if (stdoutTotalBytes + chunk.length > maxOutputBytes) {
+        const appendChunk = (chunk: Buffer, targetChunks: Buffer[]) => {
+          if (combinedTotalBytes >= maxOutputBytes) {
             outputTruncated = true;
-            const remaining = maxOutputBytes - stdoutTotalBytes;
-            if (remaining > 0) {
-              stdoutChunks.push(chunk.subarray(0, remaining));
-              stdoutTotalBytes += remaining;
-            }
-          } else {
-            stdoutChunks.push(chunk);
-            stdoutTotalBytes += chunk.length;
+            return;
           }
-        });
 
-        child.stderr?.on('data', (chunk: Buffer) => {
-          if (stderrTotalBytes + chunk.length > maxOutputBytes) {
+          if (combinedTotalBytes + chunk.length > maxOutputBytes) {
             outputTruncated = true;
-            const remaining = maxOutputBytes - stderrTotalBytes;
+            const remaining = maxOutputBytes - combinedTotalBytes;
             if (remaining > 0) {
-              stderrChunks.push(chunk.subarray(0, remaining));
-              stderrTotalBytes += remaining;
+              targetChunks.push(chunk.subarray(0, remaining));
+              combinedTotalBytes += remaining;
             }
           } else {
-            stderrChunks.push(chunk);
-            stderrTotalBytes += chunk.length;
+            targetChunks.push(chunk);
+            combinedTotalBytes += chunk.length;
           }
-        });
+        };
+
+        child.stdout?.on('data', (chunk: Buffer) => appendChunk(chunk, stdoutChunks));
+        child.stderr?.on('data', (chunk: Buffer) => appendChunk(chunk, stderrChunks));
 
         child.on('error', (err: Error) => {
           finish(null, null, err);
