@@ -128,7 +128,13 @@ export class MutationCorrelationEngine {
 
       // Check that this test block actually invokes the resolved SUT path
       const invokesSut = associatedBlock.invocations.some(
-        inv => inv.resolution.status === 'resolved'
+        inv =>
+          inv.resolution.status === 'resolved' &&
+          (!sutTarget ||
+            (this.normalizePath(inv.resolution.canonicalFilePath).endsWith(
+              this.normalizePath(sutTarget.canonicalFilePath)
+            ) &&
+              inv.resolution.canonicalSymbolName === sutTarget.canonicalSymbolName))
       );
       if (sutTarget && !invokesSut) {
         abstentions.push({
@@ -253,19 +259,29 @@ export class MutationCorrelationEngine {
         }
       }
 
-      // 2. Direct exact ID or exact Name match (no substring heuristics)
-      const matchingBlocks = testBlocks.filter(
-        b => b.id === strykerId || b.name === strykerId
-      );
-
-      if (matchingBlocks.length === 1) {
-        strykerToBlockMap.set(strykerId, matchingBlocks[0]);
-      } else if (matchingBlocks.length > 1) {
-        // Guardrail: Ambiguous mapping -> Abstain
+      // 2. Direct exact ID match (resolves to exactly one test block)
+      const idMatches = testBlocks.filter(b => b.id === strykerId);
+      if (idMatches.length === 1) {
+        strykerToBlockMap.set(strykerId, idMatches[0]);
+        continue;
+      } else if (idMatches.length > 1) {
         mappingAbstentions.push({
           reason: 'AMBIGUOUS_TEST_ID',
           testId: strykerId,
-          details: `Stryker test ID '${strykerId}' ambiguously matches ${matchingBlocks.length} test blocks: ${matchingBlocks.map(b => b.id).join(', ')}.`,
+          details: `Stryker test ID '${strykerId}' ambiguously matches ${idMatches.length} test blocks by ID: ${idMatches.map(b => b.id).join(', ')}.`,
+        });
+        continue;
+      }
+
+      // 3. Name-only fallback match (resolves only if exactly one test matches name; duplicate names must abstain)
+      const nameMatches = testBlocks.filter(b => b.name === strykerId);
+      if (nameMatches.length === 1) {
+        strykerToBlockMap.set(strykerId, nameMatches[0]);
+      } else if (nameMatches.length > 1) {
+        mappingAbstentions.push({
+          reason: 'AMBIGUOUS_TEST_ID',
+          testId: strykerId,
+          details: `Stryker test ID '${strykerId}' ambiguously matches ${nameMatches.length} test blocks by name: ${nameMatches.map(b => b.id).join(', ')}.`,
         });
       } else {
         // Guardrail: Missing mapping -> Abstain

@@ -14,11 +14,16 @@ import { MutantOutcome } from '../../src/contracts/outcomes.js';
 /**
  * P6 Synthetic Benchmark Harness
  *
- * Evaluates detection baselines across synthetic fixtures without modifying
+ * Evaluates analytical detection baselines across synthetic fixtures without modifying
  * or claiming unreviewed metrics on the real corpus (corpus/cases.jsonl).
  *
+ * NOTE: P6 calibration is ongoing. This harness evaluates synthetic analytical baselines
+ * and does NOT claim canonical P6 execution completion or real-world precision/recall before
+ * live test execution and formal Worker 03 ground-truth review.
+ *
  * Baselines evaluated:
- * - B0: Null baseline (no detection, everything passes)
+ * - B0-synth: Synthetic null baseline (uncalibrated analytical reference with 0% detection;
+ *             distinct from canonical P6 B0 runner-only baseline which requires live test runner)
  * - B1: Static analysis only (AnalysisRuleEngine)
  * - B2: Mutation testing only (survival without static attribution)
  * - B3: MockGuard combined (static findings + dynamic mutant survival + SUT correlation + stability)
@@ -277,15 +282,15 @@ function createSyntheticCases(): SyntheticCase[] {
   ];
 }
 
-test('P6 Benchmark Harness: evaluates analytical baselines B0, B1, B2, B3 on synthetic fixtures', () => {
+test('P6 Benchmark Harness: evaluates analytical baselines (B0-synth null, B1 static, B2 mutation, B3 combined) on synthetic fixtures', () => {
   const cases = createSyntheticCases();
   const ruleEngine = new AnalysisRuleEngine();
   const correlationEngine = new MutationCorrelationEngine();
   const flakinessClassifier = new FlakinessClassifier();
 
-  // B0: Null baseline (no detection)
-  const b0Detections = cases.map(() => false);
-  assert.strictEqual(b0Detections.filter(Boolean).length, 0);
+  // B0-synth: Synthetic null baseline (uncalibrated analytical reference with 0% detection; distinct from canonical P6 B0 runner-only baseline)
+  const b0SynthDetections = cases.map(() => false);
+  assert.strictEqual(b0SynthDetections.filter(Boolean).length, 0);
 
   // B1: Static Analysis Only
   const b1Detections = cases.map(c => {

@@ -304,3 +304,78 @@ test('9. P4 Exact Match Guardrail: Rejects substring match between test names', 
   const missingId = result.abstentions.find(a => a.reason === 'MISSING_TEST_ID');
   assert.ok(missingId, 'Must abstain when test ID does not match exactly');
 });
+
+test('10. P4 Guardrail: Name-only matching abstains when duplicate test names exist without unique ID', () => {
+  const engine = new MutationCorrelationEngine();
+  // Two different blocks in different files that have identical test names
+  const block1 = createMockBlock('it:block1:10', 'renders correctly', 'tests/a.test.ts');
+  const block2 = createMockBlock('it:block2:10', 'renders correctly', 'tests/b.test.ts');
+  const mutant: NormalizedMutantRecord = {
+    id: 'm-dup-name',
+    file: 'src/order-service.ts',
+    operator: 'EqualityOperator',
+    replacement: '!==',
+    startLine: 14,
+    startColumn: 1,
+    outcome: 'SURVIVED',
+    coveredBy: ['renders correctly'],
+    killedBy: [],
+  };
+
+  const result = engine.correlate([], [mutant], [block1, block2], mockSutTarget);
+
+  assert.strictEqual(result.perTestEvidence.size, 0, 'Must abstain from mapping when test name is duplicated');
+  const ambiguous = result.abstentions.find(
+    a => a.reason === 'AMBIGUOUS_TEST_ID' && a.details.includes('by name')
+  );
+  assert.ok(ambiguous, 'Must produce AMBIGUOUS_TEST_ID for duplicate test name matching');
+});
+
+test('11. P4 Guardrail: Test invoking different symbol in same file abstains from SUT correlation', () => {
+  const engine = new MutationCorrelationEngine();
+  // Block invokes a different function (e.g. calculateTax instead of checkout) in order-service.ts
+  const block = {
+    id: 'it:other-fn:10',
+    name: 'calculates tax',
+    kind: 'it' as const,
+    location: {
+      filePath: 'tests/order.test.ts',
+      span: { startLine: 10, startColumn: 1, endLine: 25, endColumn: 5 },
+    },
+    invocations: [
+      {
+        location: { filePath: 'tests/order.test.ts', span: { startLine: 12, startColumn: 5, endLine: 12, endColumn: 20 } },
+        expressionText: 'orderService.calculateTax()',
+        resolution: {
+          status: 'resolved' as const,
+          importKind: 'direct' as const,
+          canonicalFilePath: 'src/order-service.ts',
+          canonicalSymbolName: 'calculateTax', // Not checkout!
+        },
+      },
+    ],
+    mockCalls: [],
+    assertions: [],
+  };
+
+  const finding = createMockFinding('f-tax', block.id);
+  const mutant: NormalizedMutantRecord = {
+    id: 'm-survivor-checkout',
+    file: 'src/order-service.ts',
+    operator: 'ConditionalExpression',
+    replacement: 'false',
+    startLine: 15,
+    startColumn: 5,
+    outcome: 'SURVIVED',
+    coveredBy: ['it:other-fn:10'],
+    killedBy: [],
+  };
+
+  const result = engine.correlate([finding], [mutant], [block], mockSutTarget);
+
+  assert.strictEqual(result.corroboratingMatches.length, 0);
+  const sutMismatch = result.abstentions.find(
+    a => a.reason === 'MISSING_SUT_PATH_MATCH' && a.details.includes('does not invoke the resolved SUT path')
+  );
+  assert.ok(sutMismatch, 'Must abstain when test does not invoke the specific SUT symbol');
+});
