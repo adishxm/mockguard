@@ -127,7 +127,101 @@ npm run demo:cli
 
 ---
 
-## How MockGuard Works
+## How People Use MockGuard (End-to-End Workflow)
+
+```mermaid
+flowchart TD
+    classDef available fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
+    classDef toVerify fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#f57f17;
+    classDef planned fill:#fff3e0,stroke:#f57c00,stroke-width:2px,stroke-dasharray: 4 4,color:#e65100;
+    classDef advisory fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,stroke-dasharray: 4 4,color:#4a148c;
+
+    subgraph S1 ["1. Who uses it"]
+        QA["QA engineer<br/>checks critical modules"]:::available
+        Judge["Hackathon judge<br/>runs demo:cli"]:::available
+        Dev["Developer<br/>AI wrote my tests"]:::available
+        Maintainer["Open-source maintainer<br/>reviews AI-written PRs (planned)"]:::planned
+        CI["Team CI pipeline<br/>gates changed files (to verify)"]:::toVerify
+    end
+
+    subgraph S2 ["2. Install, from a clone"]
+        Clone["Install from a clone<br/>(no npm release yet)<br/>git clone, npm install, npm run build<br/>run: npm run demo:cli"]:::available
+    end
+
+    subgraph S3 ["3. Run a command"]
+        CmdCompare["compare --base HEAD~1<br/>Git revision diff"]:::available
+        CmdBaseline["baseline [target]<br/>Jest run only"]:::available
+        CmdVerify["verify [target]<br/>static scan + bounded mutation run"]:::available
+    end
+
+    subgraph S4 ["4. Inside the tool (verify)"]
+        PhaseBaseline["Baseline Jest run<br/>original suite must pass"]:::available
+        PhaseStatic["Static mock-pattern scan<br/>P2 rules (MOCK_ASSERTION, MOCKED_SUT, ...)"]:::available
+        PhaseMutation["Deterministic AST mutants<br/>on chosen source files<br/>4 operator classes"]:::available
+        PhaseAttribution["Attribution: surviving mutants<br/>matched to weak tests (P3/P4)<br/>P5 equivalence + flakiness<br/>P6 benchmark"]:::available
+    end
+
+    subgraph S5 ["5. What you get"]
+        OutTerminal["Terminal summary"]:::available
+        OutJSON["JSON evidence report<br/>--format json --out"]:::available
+        RevReport["Reviewer reads the report"]:::available
+        CIPassFail["CI pass / fail gate<br/>(to verify exit code)"]:::toVerify
+        SarifView["SARIF code-scanning view<br/>(planned)"]:::planned
+    end
+
+    subgraph S6 ["6. Follow up"]
+        GeminiAdv["Optional Gemini advisory<br/>npm run gemini:advisory<br/>off by default, never decides verdicts"]:::advisory
+        DryRun["explain / improve --dry-run<br/>design only (planned)"]:::planned
+        HumanFix["Human writes or reviews the test<br/>no auto-edits"]:::available
+    end
+
+    QA --> Clone
+    Judge --> Clone
+    Dev --> Clone
+    Maintainer -.-> Clone
+    CI --> Clone
+
+    Clone --> CmdCompare
+    Clone --> CmdBaseline
+    Clone --> CmdVerify
+
+    CmdCompare --> OutTerminal
+    CmdCompare --> OutJSON
+    CmdBaseline -->|"stops after the Jest run"| OutTerminal
+    CmdVerify --> PhaseBaseline
+
+    PhaseBaseline --> PhaseStatic
+    PhaseStatic --> PhaseMutation
+    PhaseMutation --> PhaseAttribution
+
+    PhaseAttribution --> OutTerminal
+    PhaseAttribution --> OutJSON
+
+    OutTerminal --> RevReport
+    OutTerminal --> CIPassFail
+    OutJSON --> RevReport
+    OutJSON --> CIPassFail
+    OutJSON -.-> SarifView
+
+    RevReport --> GeminiAdv
+    RevReport -.-> DryRun
+    CIPassFail --> GeminiAdv
+
+    GeminiAdv --> HumanFix
+    DryRun -.-> HumanFix
+
+    HumanFix -->|"rerun verify"| CmdVerify
+```
+
+> **Workflow Legend**:
+> - 🟩 **Green (Solid)**: Available in repository now
+> - 🟨 **Yellow (Solid)**: To verify / CI validation
+> - 🟧 **Orange (Dashed)**: Planned / roadmap extension
+> - 🟪 **Purple (Dashed)**: Optional advisory engine (Google Gemini)
+
+---
+
+## Technical Pipeline Architecture
 
 ```
                         ┌────────────────────────────────┐
