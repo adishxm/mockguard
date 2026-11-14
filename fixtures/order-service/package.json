@@ -1,0 +1,10 @@
+{
+  "name": "fixtures-order-service",
+  "version": "1.0.0",
+  "description": "MockGuard PS #41 Demonstration Order Service Fixture",
+  "type": "module",
+  "scripts": {
+    "test": "node run-jest.js"
+  }
+}
+

@@ -21,9 +21,28 @@ export class ConfigResolver {
     } = {}
   ): ResolvedTestCommand {
     const cwd = project.projectRoot;
-
-    // Check if local jest binary exists in node_modules
     const isWindows = process.platform === 'win32';
+
+    // 1. If run-jest.js exists in project root, use it directly with node
+    const runJestScript = path.join(cwd, 'run-jest.js');
+    if (fs.existsSync(runJestScript)) {
+      const args: string[] = [runJestScript];
+      if (options.testMatch) args.push('--testMatch', options.testMatch);
+      if (options.testNamePattern) args.push('--testNamePattern', options.testNamePattern);
+      if (options.changed) args.push('--onlyChanged');
+      if (options.bail) args.push('--bail');
+      args.push('--no-colors');
+
+      return {
+        executable: process.execPath,
+        args,
+        cwd,
+        configPath: project.jestConfigPath,
+        isCustomScript: true,
+      };
+    }
+
+    // 2. Check if local jest binary exists in node_modules
     const jestBinName = isWindows ? 'jest.cmd' : 'jest';
     const localJest = path.join(cwd, 'node_modules', '.bin', jestBinName);
 
@@ -34,9 +53,15 @@ export class ConfigResolver {
     if (fs.existsSync(localJest)) {
       executable = localJest;
     } else {
-      // Fallback to npx jest
-      executable = isWindows ? 'npx.cmd' : 'npx';
-      args.push('jest');
+      // On Windows, prefer node + npx-cli.js to avoid CVE-2024-27980 spawn EINVAL
+      const npxCli = path.join(path.dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npx-cli.js');
+      if (isWindows && fs.existsSync(npxCli)) {
+        executable = process.execPath;
+        args.push(npxCli, 'jest');
+      } else {
+        executable = isWindows ? 'npx.cmd' : 'npx';
+        args.push('jest');
+      }
     }
 
     if (project.jestConfigPath && !project.jestConfigPath.includes('#jest')) {

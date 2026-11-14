@@ -36,6 +36,7 @@ describe('OrderService (Strong Behavioral Test)', () => {
 
     // 2. Assert observable state change on SUT
     expect(service.status).toBe('PAID');
+    expect(service.isFulfilled).toBe(true);
     expect(service.transactionId).toBe('txn-999');
 
     // 3. Assert emitted domain event

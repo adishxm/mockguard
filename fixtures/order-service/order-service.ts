@@ -10,6 +10,7 @@ export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED';
 
 export class OrderService {
   public status: OrderStatus = 'PENDING';
+  public isFulfilled: boolean = false;
   public transactionId?: string;
 
   constructor(
@@ -39,6 +40,7 @@ export class OrderService {
 
     if (result.success && result.transactionId) {
       this.status = 'PAID';
+      this.isFulfilled = true;
       this.transactionId = result.transactionId;
       this.events.emit('ORDER_FULFILLED', { orderId, amount, transactionId: result.transactionId });
       return true;
