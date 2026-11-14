@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseCliArgs, printHelp } from './args.js';
 import { ProjectDiscovery } from '../platform/project-discovery.js';
@@ -199,12 +200,22 @@ export async function main(): Promise<void> {
   }
 }
 
-// Check if running directly as script
-const isMain =
-  process.argv[1] &&
-  (fileURLToPath(import.meta.url) === process.argv[1] ||
-    process.argv[1].endsWith('dist/cli/index.js') ||
-    process.argv[1].endsWith('dist\\cli\\index.js'));
+function checkIsMain(): boolean {
+  if (!process.argv[1]) return false;
+  try {
+    const currentPath = fileURLToPath(import.meta.url);
+    if (currentPath === process.argv[1]) return true;
+    const normalizedArgv = process.argv[1].replace(/\\/g, '/');
+    if (normalizedArgv.endsWith('cli/index.js')) return true;
+    const realCurrent = fs.realpathSync(currentPath).toLowerCase();
+    const realArgv = fs.realpathSync(process.argv[1]).toLowerCase();
+    return realCurrent === realArgv;
+  } catch {
+    return false;
+  }
+}
+
+const isMain = checkIsMain();
 
 if (isMain) {
   main().catch((err) => {

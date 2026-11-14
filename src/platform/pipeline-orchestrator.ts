@@ -197,7 +197,10 @@ export class PipelineOrchestrator {
             (name.endsWith('.ts') || name.endsWith('.js')) &&
             !name.includes('.test.') &&
             !name.includes('.spec.') &&
-            !name.endsWith('.d.ts')
+            !name.endsWith('.d.ts') &&
+            name !== 'run-jest.js' &&
+            !name.includes('jest.config') &&
+            !name.includes('tsconfig')
           ) {
             const rel = path.relative(projectRoot, fullPath);
             if (includePattern && !rel.includes(includePattern.replace(/\*/g, ''))) {

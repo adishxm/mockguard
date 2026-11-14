@@ -47,6 +47,9 @@ export class AstMutationAdapter implements MutationAdapter {
         baseName.includes('.test.') ||
         baseName.includes('.spec.') ||
         baseName.endsWith('.d.ts') ||
+        baseName === 'run-jest.js' ||
+        baseName.includes('jest.config') ||
+        baseName.includes('tsconfig') ||
         resolved.includes('node_modules') ||
         resolved.includes('dist')
       ) {
@@ -221,7 +224,17 @@ export class AstMutationAdapter implements MutationAdapter {
     testCommand: string[],
     options: { timeoutMs?: number; projectRoot?: string } = {}
   ): Promise<MutantExecutionResult> {
-    const root = path.resolve(options.projectRoot || path.dirname(mutant.file));
+    let root = path.resolve(options.projectRoot || path.dirname(mutant.file));
+    if (!options.projectRoot) {
+      let curr = path.dirname(path.resolve(mutant.file));
+      while (curr && curr !== path.dirname(curr)) {
+        if (fs.existsSync(path.join(curr, 'package.json'))) {
+          root = curr;
+          break;
+        }
+        curr = path.dirname(curr);
+      }
+    }
     const startTime = Date.now();
 
     // Create unique temporary sandbox directory

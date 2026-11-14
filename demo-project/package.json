@@ -1,0 +1,11 @@
+{
+  "name": "payment-demo",
+  "version": "1.0.0",
+  "description": "MockGuard Judge Demonstration - Payment & Order Processing",
+  "type": "module",
+  "scripts": {
+    "test": "node run-jest.js",
+    "use:weak": "node switch-to-weak.js",
+    "use:strong": "node switch-to-strong.js"
+  }
+}

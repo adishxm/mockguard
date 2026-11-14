@@ -40,7 +40,7 @@ If business logic in `OrderService` breaks, this test **still passes**. MockGuar
 - **Node.js**: `>= 18.0.0`
 - **npm**: `>= 9.0.0`
 
-### Installation & Build
+### Installation & Setup
 
 ```bash
 # Clone repository
@@ -53,27 +53,51 @@ npm install
 # Build TypeScript to dist/
 npm run build
 
-# Run all 101 automated tests
+# Link CLI globally (enables 'mockguard' command in any terminal)
+npm link
+
+# Run all 101 automated test suites
 npm test
+```
+
+### Live Judge Demonstration (3-Act Demo)
+
+MockGuard includes a self-contained, offline demonstration project (`./demo-project`) featuring payment checkout business logic:
+
+```bash
+# Act 1 & 2: Show MockGuard detecting the weak mock test and failing on surviving mutants
+mockguard baseline ./demo-project
+mockguard verify ./demo-project
+
+# Act 3: Upgrade to strong behavioral assertions and prove all mutants are killed
+node demo-project/switch-to-strong.js
+mockguard verify ./demo-project
+
+# Alternatively, run the 1-click end-to-end demo script:
+# Windows PowerShell:
+.\demo.ps1
+# Linux / macOS Bash:
+./demo.sh
 ```
 
 ### Running the CLI
 
 ```bash
 # View CLI help and options
-node dist/src/cli/index.js --help
+mockguard --help
+# (or directly via node: node dist/src/cli/index.js --help)
 
 # Run baseline verification on a target project
-node dist/src/cli/index.js baseline ./my-project
+mockguard baseline ./demo-project
 
 # Run complete mock verification with static analysis and mutation testing
-node dist/src/cli/index.js verify ./my-project
+mockguard verify ./demo-project
 
 # Run revision comparison between a base Git commit and current working tree
-node dist/src/cli/index.js compare --base HEAD~1 ./my-project
+mockguard compare --base HEAD~1 ./fixtures/order-service
 
 # Export structured JSON report with secret redaction
-node dist/src/cli/index.js verify ./my-project --format json --out ./mockguard-report.json
+mockguard verify ./demo-project --format json --out ./mockguard-report.json
 
 # Run the interactive in-depth CLI demo
 npm run demo:cli
