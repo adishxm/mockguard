@@ -58,6 +58,16 @@ export interface MutationSection {
   excludedMutants?: string[];
 }
 
+export interface GeminiAdvisorySection {
+  status: 'ACTIVE' | 'OFFLINE_FALLBACK' | 'DISABLED';
+  model?: string;
+  rootCause?: string;
+  suggestedAssertion?: string;
+  remediationSnippet?: string;
+  targetMutant?: string;
+  tokensConsumed?: { prompt?: number; candidates?: number };
+}
+
 export interface ClaimsSection {
   equivalentMutantsDetected: boolean;
   sandboxed: boolean; // Must remain false unless verified sandbox
@@ -79,6 +89,7 @@ export interface MockGuardReport {
   analysis: AnalysisSection;
   mutation: MutationSection;
   claims: ClaimsSection;
+  geminiAdvisory?: GeminiAdvisorySection;
   artifacts: ArtifactReference[];
   verdict?: Verdict;
   runId?: string;

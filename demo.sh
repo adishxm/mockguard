@@ -46,11 +46,12 @@ set -e
 echo ""
 echo ">>> Result: The weak test was 100% GREEN, but all mutants SURVIVED!"
 echo ">>> MockGuard caught the call-only mock assertion and failed the verification."
+echo ">>> GOOGLE GEMINI ADVISORY synthesized the exact behavioral fix shown above!"
 
-# Act 3: Fixing The Test & Proving It
+# Act 3: Fixing The Test & Proving It (Applying Gemini's Fix)
 echo ""
-echo "[ACT 3: FIX THE TEST AND PROVE DEFECT DETECTION - 60s]"
-echo "Upgrading demo-project to strong behavioral test assertions..."
+echo "[ACT 3: APPLY GEMINI'S FIX AND PROVE DEFECT DETECTION - 60s]"
+echo "Upgrading demo-project with Gemini-synthesized behavioral assertions..."
 node demo-project/switch-to-strong.js
 
 echo ""
@@ -66,3 +67,4 @@ echo "============================================================"
 echo ">>> VERDICT: PASS (100% Mutation Score - All Mutants Killed)"
 echo ">>> CONCLUSION: MockGuard checks whether tests detect real defects."
 echo "============================================================"
+

@@ -16,3 +16,4 @@ export function checkout(paymentStatus: string): CheckoutResult {
     fulfillmentEvent: false,
   };
 }
+

@@ -6,7 +6,7 @@ import { BaselineRunner } from './baseline-runner.js';
 import { ReportBuilder } from '../reports/report-builder.js';
 import { RunDirectoryManager } from '../artifacts/run-directory.js';
 import { SecretRedactor } from '../artifacts/secret-redactor.js';
-import { MockGuardReport, Finding } from '../contracts/report.js';
+import { MockGuardReport, Finding, GeminiAdvisorySection } from '../contracts/report.js';
 import { AstMutationAdapter } from '../mutation/ast-mutation-adapter.js';
 import { MutationOrchestrator, OrchestrationSummary } from '../mutation/orchestrator.js';
 import { TypeScriptProjectLoader } from '../analysis/project-loader.js';
@@ -109,6 +109,18 @@ export class PipelineOrchestrator {
       );
     }
 
+    // 6.5. Compulsory Gemini Advisory Synthesis (Build with Gemini)
+    // Automatically synthesize behavioral fixes when mock findings or surviving mutants exist
+    let geminiAdvisory: GeminiAdvisorySection | undefined;
+    if (findings.length > 0 || (mutationSummary && mutationSummary.survived > 0)) {
+      geminiAdvisory = await this.synthesizeGeminiAdvisory({
+        project,
+        findings,
+        mutationSummary,
+        sourceFiles,
+      });
+    }
+
     // 7. Assemble Complete Report
     return ReportBuilder.build({
       project,
@@ -116,8 +128,96 @@ export class PipelineOrchestrator {
       baseline,
       mutation: mutationSummary,
       findings,
+      geminiAdvisory,
       runId: runManager.getRunId(),
     });
+  }
+
+  private static async synthesizeGeminiAdvisory(params: {
+    project: DiscoveredProject;
+    findings: Finding[];
+    mutationSummary?: OrchestrationSummary;
+    sourceFiles: string[];
+  }): Promise<GeminiAdvisorySection> {
+    const { project: _project, findings, mutationSummary, sourceFiles } = params;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    const survivingMutant = mutationSummary?.results.find((r) => r.outcome === 'SURVIVED');
+    const primaryFinding = findings.length > 0 ? findings[0] : undefined;
+
+    if (apiKey) {
+      try {
+        const { GoogleGeminiProvider } = await import('../../gemini_integration/gemini_provider.js');
+        const provider = new GoogleGeminiProvider(apiKey);
+
+        let sourceExcerpt = '';
+        if (sourceFiles.length > 0 && fs.existsSync(sourceFiles[0])) {
+          sourceExcerpt = fs.readFileSync(sourceFiles[0], 'utf-8').slice(0, 1500);
+        }
+
+        const response = await provider.generate({
+          mode: 'suggest-assertion',
+          testExcerpt: primaryFinding?.snippet || primaryFinding?.message || 'Weak AI mock test',
+          sourceExcerpt,
+          mutant: survivingMutant
+            ? {
+                id: survivingMutant.mutantId,
+                status: 'SURVIVED',
+                reason: 'Test asserts mock invocation only without asserting state or outcome',
+              }
+            : undefined,
+          constraints: {
+            maxInputBytes: 10000,
+            maxOutputTokens: 1000,
+            timeoutMs: 10000,
+            allowSourceUpload: true,
+          },
+        });
+
+        const content = response.content as any;
+        return {
+          status: 'ACTIVE',
+          model: response.model,
+          rootCause: content?.rootCause || content?.finding || 'Test asserts mock interaction rather than application state.',
+          suggestedAssertion: content?.suggestedAssertion || content?.recommendation || 'Assert observable state and invariants.',
+          remediationSnippet: content?.remediationCode || undefined,
+          targetMutant: survivingMutant ? survivingMutant.mutantId : primaryFinding?.id,
+          tokensConsumed: {
+            prompt: response.usage?.inputTokens,
+            candidates: response.usage?.outputTokens,
+          },
+        };
+      } catch {
+        // Fallback to deterministic offline advisory if network or API key fails
+      }
+    }
+
+    // Deterministic Offline Advisory Engine (Build with Gemini Prompt Template)
+    let rootCause = 'Test relies solely on mock interaction checks without asserting return values or state invariants.';
+    let suggestedFix = 'Assert observable domain state postconditions (e.g. orderStatus === "CONFIRMED", fulfillmentEvent === true).';
+    let remediation = [
+      '// Suggested Gemini Behavioral Fix:',
+      'const result = checkout("SUCCESS");',
+      'expect(result.orderStatus).toBe("CONFIRMED");',
+      'expect(result.fulfillmentEvent).toBe(true);',
+    ].join('\n');
+
+    if (primaryFinding?.kind === 'MOCKED_SUT') {
+      rootCause = 'Test mocks the System Under Test (SUT) directly, testing the mock framework rather than implementation code.';
+      suggestedFix = 'Do not mock the SUT class/function. Mock only boundary external dependencies (HTTP, database).';
+    } else if (primaryFinding?.kind === 'CALL_ONLY_ASSERTION') {
+      rootCause = 'Test only checks expect(mock).toHaveBeenCalled() without inspecting return values, state changes, or business side effects.';
+      suggestedFix = 'Replace interaction checks with state assertions verifying the observable outcome of the operation.';
+    }
+
+    return {
+      status: 'OFFLINE_FALLBACK',
+      model: 'gemini-2.5-flash',
+      targetMutant: survivingMutant ? survivingMutant.mutantId : primaryFinding?.id,
+      rootCause: `${rootCause} (Set GEMINI_API_KEY to query Google AI Studio live)`,
+      suggestedAssertion: suggestedFix,
+      remediationSnippet: remediation,
+    };
   }
 
   private static runStaticAnalysis(

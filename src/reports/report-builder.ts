@@ -6,6 +6,7 @@ import {
   BaselineResult,
   Finding,
   ArtifactReference,
+  GeminiAdvisorySection,
 } from '../contracts/report.js';
 import { Verdict } from '../contracts/outcomes.js';
 import { DiscoveredProject } from '../platform/project-discovery.js';
@@ -33,6 +34,7 @@ export class ReportBuilder {
     baseline: BaselineResult;
     mutation?: OrchestrationSummary;
     findings?: Finding[];
+    geminiAdvisory?: GeminiAdvisorySection;
     artifacts?: ArtifactReference[];
     runId?: string;
   }): MockGuardReport {
@@ -42,6 +44,7 @@ export class ReportBuilder {
       baseline,
       mutation,
       findings = [],
+      geminiAdvisory,
       artifacts = [],
       runId,
     } = params;
@@ -118,6 +121,7 @@ export class ReportBuilder {
         equivalentMutantsDetected: false,
         sandboxed: false, // Invariant: Must remain false unless verified sandbox
       },
+      geminiAdvisory,
       artifacts,
       verdict,
       runId,
@@ -159,6 +163,32 @@ export class ReportBuilder {
         if (f.file && f.line) {
           lines.push(`    at ${f.file}:${f.line}`);
         }
+      }
+    }
+
+    if (report.geminiAdvisory) {
+      lines.push('\n------------------------------------------------------');
+      lines.push('🤖 GOOGLE GEMINI ADVISORY (Build with Gemini)');
+      lines.push('------------------------------------------------------');
+      const statusLabel = report.geminiAdvisory.model 
+        ? `${report.geminiAdvisory.status} (${report.geminiAdvisory.model})`
+        : report.geminiAdvisory.status;
+      lines.push(`Advisory Engine: ${statusLabel}`);
+      if (report.geminiAdvisory.targetMutant) {
+        lines.push(`Target Mutant:   ${report.geminiAdvisory.targetMutant}`);
+      }
+      if (report.geminiAdvisory.rootCause) {
+        lines.push(`Root Cause:      ${report.geminiAdvisory.rootCause}`);
+      }
+      if (report.geminiAdvisory.suggestedAssertion) {
+        lines.push(`Suggested Fix:   ${report.geminiAdvisory.suggestedAssertion}`);
+      }
+      if (report.geminiAdvisory.remediationSnippet) {
+        lines.push(`Remediation Snippet:`);
+        lines.push(report.geminiAdvisory.remediationSnippet);
+      }
+      if (report.geminiAdvisory.tokensConsumed) {
+        lines.push(`Tokens Consumed: Prompt: ${report.geminiAdvisory.tokensConsumed.prompt ?? 'N/A'}, Candidates: ${report.geminiAdvisory.tokensConsumed.candidates ?? 'N/A'}`);
       }
     }
 

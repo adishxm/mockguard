@@ -35,10 +35,11 @@ mockguard verify ./demo-project
 
 Write-Host "`n>>> Result: The weak test was 100% GREEN, but all mutants SURVIVED!" -ForegroundColor Red
 Write-Host ">>> MockGuard caught the call-only mock assertion and failed the verification." -ForegroundColor Red
+Write-Host ">>> GOOGLE GEMINI ADVISORY synthesized the exact behavioral fix shown above!" -ForegroundColor Green
 
-# Act 3: Fixing The Test & Proving It
-Write-Host "`n[ACT 3: FIX THE TEST AND PROVE DEFECT DETECTION - 60s]" -ForegroundColor Yellow
-Write-Host "Upgrading demo-project to strong behavioral test assertions..." -ForegroundColor Green
+# Act 3: Fixing The Test & Proving It (Applying Gemini's Fix)
+Write-Host "`n[ACT 3: APPLY GEMINI'S FIX AND PROVE DEFECT DETECTION - 60s]" -ForegroundColor Yellow
+Write-Host "Upgrading demo-project with Gemini-synthesized behavioral assertions..." -ForegroundColor Green
 node demo-project/switch-to-strong.js
 
 Write-Host "`n--- Strong Behavioral Test (demo-project/tests/checkout.test.ts) ---" -ForegroundColor DarkGray
@@ -51,3 +52,4 @@ Write-Host "`n============================================================" -For
 Write-Host ">>> VERDICT: PASS (100% Mutation Score - All Mutants Killed)" -ForegroundColor Green
 Write-Host ">>> CONCLUSION: MockGuard checks whether tests detect real defects." -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
+

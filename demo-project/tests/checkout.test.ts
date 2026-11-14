@@ -14,3 +14,4 @@ describe('Payment & Order Checkout (Weak AI-Generated Test)', () => {
     expect(payment).toHaveBeenCalled();
   });
 });
+
