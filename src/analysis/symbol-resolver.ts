@@ -1,10 +1,11 @@
 import ts from 'typescript';
 import path from 'node:path';
-import { TargetSymbolResolution } from './model.js';
+import { TargetSymbolResolution, SourceSpan } from './model.js';
 
 export interface ProductionSymbolTarget {
   canonicalFilePath: string;
   canonicalSymbolName: string;
+  declarationSpan?: SourceSpan;
 }
 
 export class SymbolResolver {

@@ -7,7 +7,12 @@ import { Finding } from '../../src/analysis/rules/types.js';
 import { DiscoveredTestBlock } from '../../src/analysis/model.js';
 import { NormalizedMutantRecord } from '../../src/mutation/stryker-normalizer.js';
 
-function createMockBlock(id: string, name: string, file = 'tests/order.test.ts'): DiscoveredTestBlock {
+function createMockBlock(
+  id: string,
+  name: string,
+  file = 'tests/order.test.ts',
+  invokesSut = true
+): DiscoveredTestBlock {
   return {
     id,
     name,
@@ -16,7 +21,20 @@ function createMockBlock(id: string, name: string, file = 'tests/order.test.ts')
       filePath: file,
       span: { startLine: 10, startColumn: 1, endLine: 25, endColumn: 5 },
     },
-    invocations: [],
+    invocations: invokesSut
+      ? [
+          {
+            location: { filePath: file, span: { startLine: 12, startColumn: 5, endLine: 12, endColumn: 20 } },
+            expressionText: 'orderService.checkout()',
+            resolution: {
+              status: 'resolved',
+              importKind: 'direct',
+              canonicalFilePath: 'src/order-service.ts',
+              canonicalSymbolName: 'checkout',
+            },
+          },
+        ]
+      : [],
     mockCalls: [],
     assertions: [],
   };
@@ -38,6 +56,12 @@ function createMockFinding(findingId: string, blockId: string): Finding {
   };
 }
 
+const mockSutTarget = {
+  canonicalFilePath: 'src/order-service.ts',
+  canonicalSymbolName: 'checkout',
+  declarationSpan: { startLine: 1, startColumn: 1, endLine: 30, endColumn: 1 },
+};
+
 test('1. P4 Per-Test Evidence: Treats killedBy as test-failure attribution with cause UNKNOWN', () => {
   const engine = new MutationCorrelationEngine();
   const block = createMockBlock('it:checkout:10', 'checks out order');
@@ -53,10 +77,7 @@ test('1. P4 Per-Test Evidence: Treats killedBy as test-failure attribution with 
     killedBy: ['it:checkout:10'],
   };
 
-  const result = engine.correlate([], [mutant], [block], {
-    canonicalFilePath: 'src/order-service.ts',
-    canonicalSymbolName: 'checkout',
-  });
+  const result = engine.correlate([], [mutant], [block], mockSutTarget);
 
   const evidence = result.perTestEvidence.get(block.id);
   assert.ok(evidence, 'Must generate per-test evidence for mapped block');
@@ -86,10 +107,7 @@ test('2. P4 Guardrail: Abstains when test ID cannot be mapped to any discovered 
     killedBy: [],
   };
 
-  const result = engine.correlate([finding], [mutant], [block], {
-    canonicalFilePath: 'src/order-service.ts',
-    canonicalSymbolName: 'checkout',
-  });
+  const result = engine.correlate([finding], [mutant], [block], mockSutTarget);
 
   assert.strictEqual(result.corroboratingMatches.length, 0);
   const missingIdAbstention = result.abstentions.find(a => a.reason === 'MISSING_TEST_ID');
@@ -98,7 +116,6 @@ test('2. P4 Guardrail: Abstains when test ID cannot be mapped to any discovered 
 
 test('3. P4 Guardrail: Abstains when test ID mapping is ambiguous (never guesses)', () => {
   const engine = new MutationCorrelationEngine();
-  // Two blocks sharing the same name in different describe blocks
   const blockA = createMockBlock('it:shared:10', 'handles edge case', 'tests/a.test.ts');
   const blockB = createMockBlock('it:shared:30', 'handles edge case', 'tests/b.test.ts');
   const mutant: NormalizedMutantRecord = {
@@ -113,10 +130,7 @@ test('3. P4 Guardrail: Abstains when test ID mapping is ambiguous (never guesses
     killedBy: [],
   };
 
-  const result = engine.correlate([], [mutant], [blockA, blockB], {
-    canonicalFilePath: 'src/order-service.ts',
-    canonicalSymbolName: 'checkout',
-  });
+  const result = engine.correlate([], [mutant], [blockA, blockB], mockSutTarget);
 
   const ambiguousAbstention = result.abstentions.find(a => a.reason === 'AMBIGUOUS_TEST_ID');
   assert.ok(ambiguousAbstention, 'Must abstain on ambiguous test ID mapping');
@@ -130,7 +144,7 @@ test('4. P4 Guardrail: Abstains when mutant file does not match canonical SUT pa
   const finding = createMockFinding('f-1', block.id);
   const mutantOnUnrelatedFile: NormalizedMutantRecord = {
     id: 'm-unrelated',
-    file: 'src/unrelated-helper.ts', // NOT the canonical SUT path
+    file: 'src/unrelated-helper.ts',
     operator: 'ConditionalExpression',
     replacement: 'false',
     startLine: 5,
@@ -140,10 +154,7 @@ test('4. P4 Guardrail: Abstains when mutant file does not match canonical SUT pa
     killedBy: [],
   };
 
-  const result = engine.correlate([finding], [mutantOnUnrelatedFile], [block], {
-    canonicalFilePath: 'src/order-service.ts',
-    canonicalSymbolName: 'checkout',
-  });
+  const result = engine.correlate([finding], [mutantOnUnrelatedFile], [block], mockSutTarget);
 
   assert.strictEqual(result.corroboratingMatches.length, 0);
   const sutMismatch = result.abstentions.find(a => a.reason === 'MISSING_SUT_PATH_MATCH');
@@ -170,10 +181,7 @@ test('5. P4 Guardrail: Abstains when mutant has NO_COVERAGE', () => {
     [finding],
     [mutantNoCoverage],
     [block],
-    {
-      canonicalFilePath: 'src/order-service.ts',
-      canonicalSymbolName: 'checkout',
-    },
+    mockSutTarget,
     {
       testIdMapping: { 'test-1': block.id },
     }
@@ -200,10 +208,7 @@ test('6. P4 Corroboration: Emits corroborating evidence without raising confiden
     killedBy: [],
   };
 
-  const result = engine.correlate([finding], [survivingMutant], [block], {
-    canonicalFilePath: 'src/order-service.ts',
-    canonicalSymbolName: 'checkout',
-  });
+  const result = engine.correlate([finding], [survivingMutant], [block], mockSutTarget);
 
   assert.strictEqual(result.corroboratingMatches.length, 1);
   const match = result.corroboratingMatches[0];
@@ -220,4 +225,157 @@ test('6. P4 Corroboration: Emits corroborating evidence without raising confiden
   assert.ok(!matchStr.includes('PROVEN'), 'Must never emit PROVEN claim');
   assert.ok(!matchStr.includes('REDUNDANT'), 'Must never emit REDUNDANT claim');
   assert.ok(!matchStr.includes('VACUOUS'), 'Must never emit VACUOUS claim');
+});
+
+test('7. P4 Scope Guardrail: Abstains when mutant is in same file but outside SUT declaration span', () => {
+  const engine = new MutationCorrelationEngine();
+  const block = createMockBlock('it:checkout:10', 'checks out order');
+  const finding = createMockFinding('f-1', block.id);
+
+  // SUT target checkout is on lines 1..30
+  // Mutant is located on line 85 (e.g. refund function) in the same order-service.ts file
+  const mutantOutsideSpan: NormalizedMutantRecord = {
+    id: 'm-outside-span',
+    file: 'src/order-service.ts',
+    operator: 'ConditionalExpression',
+    replacement: 'false',
+    startLine: 85,
+    startColumn: 5,
+    outcome: 'SURVIVED',
+    coveredBy: ['it:checkout:10'],
+    killedBy: [],
+  };
+
+  const result = engine.correlate([finding], [mutantOutsideSpan], [block], mockSutTarget);
+
+  assert.strictEqual(result.corroboratingMatches.length, 0);
+  const scopeAbstention = result.abstentions.find(
+    a => a.reason === 'MISSING_SUT_PATH_MATCH' && a.details.includes('outside canonical SUT declaration span')
+  );
+  assert.ok(scopeAbstention, 'Must abstain when mutant is outside SUT declaration span');
+});
+
+test('8. P4 Scope Guardrail: Abstains when test block does not invoke the resolved SUT path', () => {
+  const engine = new MutationCorrelationEngine();
+  // Test block has invocations = [] (does NOT invoke SUT)
+  const nonInvokingBlock = createMockBlock('it:helper-only:10', 'runs helper only', 'tests/order.test.ts', false);
+  const finding = createMockFinding('f-1', nonInvokingBlock.id);
+
+  const survivingMutant: NormalizedMutantRecord = {
+    id: 'm-survivor-1',
+    file: 'src/order-service.ts',
+    operator: 'ConditionalExpression',
+    replacement: 'false',
+    startLine: 15,
+    startColumn: 5,
+    outcome: 'SURVIVED',
+    coveredBy: ['it:helper-only:10'],
+    killedBy: [],
+  };
+
+  const result = engine.correlate([finding], [survivingMutant], [nonInvokingBlock], mockSutTarget);
+
+  assert.strictEqual(result.corroboratingMatches.length, 0);
+  const noInvocationAbstention = result.abstentions.find(
+    a => a.reason === 'MISSING_SUT_PATH_MATCH' && a.details.includes('does not invoke the resolved SUT path')
+  );
+  assert.ok(noInvocationAbstention, 'Must abstain when test does not invoke resolved SUT path');
+});
+
+test('9. P4 Exact Match Guardrail: Rejects substring match between test names', () => {
+  const engine = new MutationCorrelationEngine();
+  const block = createMockBlock('it:checkout:10', 'checks out order');
+  const mutant: NormalizedMutantRecord = {
+    id: 'm-survivor',
+    file: 'src/order-service.ts',
+    operator: 'EqualityOperator',
+    replacement: '!==',
+    startLine: 14,
+    startColumn: 1,
+    outcome: 'SURVIVED',
+    // Stryker ID contains 'checks out order' as a substring, but is NOT an exact match
+    coveredBy: ['checks out order with discount coupon and express shipping'],
+    killedBy: [],
+  };
+
+  const result = engine.correlate([], [mutant], [block], mockSutTarget);
+
+  assert.strictEqual(result.perTestEvidence.size, 0, 'Substring test ID match must NOT be admitted');
+  const missingId = result.abstentions.find(a => a.reason === 'MISSING_TEST_ID');
+  assert.ok(missingId, 'Must abstain when test ID does not match exactly');
+});
+
+test('10. P4 Guardrail: Name-only matching abstains when duplicate test names exist without unique ID', () => {
+  const engine = new MutationCorrelationEngine();
+  // Two different blocks in different files that have identical test names
+  const block1 = createMockBlock('it:block1:10', 'renders correctly', 'tests/a.test.ts');
+  const block2 = createMockBlock('it:block2:10', 'renders correctly', 'tests/b.test.ts');
+  const mutant: NormalizedMutantRecord = {
+    id: 'm-dup-name',
+    file: 'src/order-service.ts',
+    operator: 'EqualityOperator',
+    replacement: '!==',
+    startLine: 14,
+    startColumn: 1,
+    outcome: 'SURVIVED',
+    coveredBy: ['renders correctly'],
+    killedBy: [],
+  };
+
+  const result = engine.correlate([], [mutant], [block1, block2], mockSutTarget);
+
+  assert.strictEqual(result.perTestEvidence.size, 0, 'Must abstain from mapping when test name is duplicated');
+  const ambiguous = result.abstentions.find(
+    a => a.reason === 'AMBIGUOUS_TEST_ID' && a.details.includes('by name')
+  );
+  assert.ok(ambiguous, 'Must produce AMBIGUOUS_TEST_ID for duplicate test name matching');
+});
+
+test('11. P4 Guardrail: Test invoking different symbol in same file abstains from SUT correlation', () => {
+  const engine = new MutationCorrelationEngine();
+  // Block invokes a different function (e.g. calculateTax instead of checkout) in order-service.ts
+  const block = {
+    id: 'it:other-fn:10',
+    name: 'calculates tax',
+    kind: 'it' as const,
+    location: {
+      filePath: 'tests/order.test.ts',
+      span: { startLine: 10, startColumn: 1, endLine: 25, endColumn: 5 },
+    },
+    invocations: [
+      {
+        location: { filePath: 'tests/order.test.ts', span: { startLine: 12, startColumn: 5, endLine: 12, endColumn: 20 } },
+        expressionText: 'orderService.calculateTax()',
+        resolution: {
+          status: 'resolved' as const,
+          importKind: 'direct' as const,
+          canonicalFilePath: 'src/order-service.ts',
+          canonicalSymbolName: 'calculateTax', // Not checkout!
+        },
+      },
+    ],
+    mockCalls: [],
+    assertions: [],
+  };
+
+  const finding = createMockFinding('f-tax', block.id);
+  const mutant: NormalizedMutantRecord = {
+    id: 'm-survivor-checkout',
+    file: 'src/order-service.ts',
+    operator: 'ConditionalExpression',
+    replacement: 'false',
+    startLine: 15,
+    startColumn: 5,
+    outcome: 'SURVIVED',
+    coveredBy: ['it:other-fn:10'],
+    killedBy: [],
+  };
+
+  const result = engine.correlate([finding], [mutant], [block], mockSutTarget);
+
+  assert.strictEqual(result.corroboratingMatches.length, 0);
+  const sutMismatch = result.abstentions.find(
+    a => a.reason === 'MISSING_SUT_PATH_MATCH' && a.details.includes('does not invoke the resolved SUT path')
+  );
+  assert.ok(sutMismatch, 'Must abstain when test does not invoke the specific SUT symbol');
 });
