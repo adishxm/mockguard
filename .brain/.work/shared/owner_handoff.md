@@ -11,3 +11,12 @@ Every worker handoff must include:
 7. Evidence artifact path.
 
 No workstream is complete because a file exists. It is complete only when the receiving owner can reproduce the result.
+
+---
+
+## Active Handoff Log
+
+| Handoff ID | From | To | Subject / File | Status | Handoff Artifact |
+|---|---|---|---|---|---|
+| `HANDOFF-W01-W02-MUTATION-ORCHESTRATOR-V1` | Worker 01 | Worker 02 | `src/mutation/orchestrator.ts` concurrency, timeout, cancellation & containment | **PENDING REVIEW** | [handoff_worker_01_to_worker_02.md](./handoff_worker_01_to_worker_02.md) |
+
