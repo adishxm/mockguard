@@ -1,0 +1,32 @@
+name: MockGuard Security Analysis (CodeQL)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: CodeQL SAST Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Hardened Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@48ab28a6f5dab2a823c7a40f05c60000a874307a # v3.28.0
+        with:
+          languages: javascript-typescript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@48ab28a6f5dab2a823c7a40f05c60000a874307a # v3.28.0

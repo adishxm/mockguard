@@ -1,0 +1,59 @@
+name: MockGuard CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Build, Lint & Test Matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - name: Hardened Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Verify Environment & Security Controls
+        run: |
+          node -v
+          npm -v
+
+      - name: Dependency Installation (Clean CI)
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts
+          elif [ -f package.json ]; then
+            npm install --ignore-scripts
+          else
+            echo "package.json not yet initialized by Builder 1; skipping dependency step."
+          fi
+
+      - name: Lint and Static Schema Verification
+        run: |
+          if [ -f package.json ] && npm run | grep -q "lint"; then
+            npm run lint
+          fi
+
+      - name: Execute Test Suite
+        run: |
+          if [ -f package.json ] && npm run | grep -q "test"; then
+            npm test -- --ci --maxWorkers=2
+          fi

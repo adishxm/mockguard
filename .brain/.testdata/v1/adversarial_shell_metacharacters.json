@@ -1,0 +1,9 @@
+{
+  "id": "adversarial-shell-metacharacters",
+  "category": "security_boundary",
+  "scenario": "Test name or pattern containing shell metacharacters (; rm -rf / | cat)",
+  "payload": "order-service.test.ts; echo INJECTED",
+  "expectedStatus": "ARGUMENT_ESCAPED_OR_REJECTED",
+  "expectedExitCode": 2,
+  "status": "PLANNED"
+}

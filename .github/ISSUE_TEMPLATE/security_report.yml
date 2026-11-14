@@ -1,0 +1,31 @@
+name: Security Vulnerability Report
+description: Privately report a security issue or boundary leak in MockGuard
+title: "[SECURITY]: "
+labels: ["security", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting security concerns responsibly.
+        Please do not include sensitive production secrets or private internal source code in this report.
+  - type: textarea
+    id: vulnerability-summary
+    attributes:
+      label: Summary
+      description: Provide a clear summary of the security vulnerability or boundary breach.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: Steps to Reproduce
+      description: Exact commands, environment variables, or config inputs to reproduce the behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Expected vs Observed Impact
+      description: Describe what execution boundary or data was exposed.
+    validations:
+      required: true

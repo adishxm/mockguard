@@ -1,0 +1,22 @@
+# MockGuard Code Owners and Governance Map
+
+# Core repository maintainers
+* @adishxm
+
+# Security, QA, CI/CD, and release pipeline
+.github/                                 @adishxm
+.brain/.work/security/                   @adishxm
+.brain/.work/qa/                         @adishxm
+SECURITY.md                              @adishxm
+RELEASE.md                               @adishxm
+
+# Contracts, schemas, and architecture specifications
+.brain/.work/contracts/                  @adishxm
+.brain/.work/architecture/               @adishxm
+
+# AI boundary and prompt contracts
+gemini_integration/                      @adishxm
+.brain/.work/ai/                         @adishxm
+
+# Pitch deck, presentation notes, and submission assets
+.brain/.work/pitch_deck/                 @adishxm

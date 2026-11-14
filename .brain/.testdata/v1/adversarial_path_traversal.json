@@ -1,0 +1,9 @@
+{
+  "id": "adversarial-path-traversal",
+  "category": "security_boundary",
+  "scenario": "Attempted config or target path with directory traversal (../../etc/passwd)",
+  "payload": "../../outside_workspace/test.js",
+  "expectedStatus": "BOUNDARY_REJECTED",
+  "expectedExitCode": 2,
+  "status": "PLANNED"
+}

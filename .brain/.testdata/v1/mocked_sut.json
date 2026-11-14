@@ -1,0 +1,9 @@
+{
+  "id": "mocked-sut",
+  "framework": "jest",
+  "category": "static_finding",
+  "expectedStatic": "MOCKED_SUT",
+  "severity": "CRITICAL",
+  "expectedBehavior": "FLAG_MOCKED_SYSTEM_UNDER_TEST",
+  "status": "PLANNED"
+}

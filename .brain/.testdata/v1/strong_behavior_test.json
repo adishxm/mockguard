@@ -1,0 +1,9 @@
+{
+  "id": "strong-behavior-test",
+  "framework": "jest",
+  "kind": "strong",
+  "expectedStatic": "NONE",
+  "expectedDynamic": "KILLED",
+  "mutationScoreImpact": "INCREMENT_KILLED",
+  "status": "PLANNED"
+}

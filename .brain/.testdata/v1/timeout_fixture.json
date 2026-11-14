@@ -1,0 +1,9 @@
+{
+  "id": "timeout-fixture",
+  "category": "process_limits",
+  "scenario": "Infinite loop or runaway worker process in test suite",
+  "expectedStatus": "TIMEOUT",
+  "expectedProcessAction": "SIGKILL_CHILD_TREE",
+  "mutationScoreImpact": "EXCLUDED_FROM_SCORE",
+  "status": "PLANNED"
+}
