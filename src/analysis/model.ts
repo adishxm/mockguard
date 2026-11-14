@@ -1,4 +1,4 @@
-﻿export interface SourceSpan {
+export interface SourceSpan {
   startLine: number;
   startColumn: number;
   endLine: number;
@@ -76,5 +76,6 @@ export interface DiscoveredTestBlock {
 export interface TestFileAnalysis {
   testFilePath: string;
   testBlocks: DiscoveredTestBlock[];
+  fileLevelMockCalls?: DiscoveredMockCall[];
   unsupportedConstructs: { reason: string; location: SourceLocation }[];
 }

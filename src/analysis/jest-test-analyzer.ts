@@ -24,6 +24,7 @@ export class JestTestAnalyzer {
 
   analyzeSourceFile(sourceFile: ts.SourceFile, targetSymbol?: ProductionSymbolTarget): TestFileAnalysis {
     const testBlocks: DiscoveredTestBlock[] = [];
+    const fileLevelMockCalls: DiscoveredMockCall[] = [];
     const unsupportedConstructs: { reason: string; location: SourceLocation }[] = [];
 
     let currentBlockStack: DiscoveredTestBlock[] = [];
@@ -99,6 +100,8 @@ export class JestTestAnalyzer {
         if (mockCall) {
           if (activeBlock) {
             activeBlock.mockCalls.push(mockCall);
+          } else {
+            fileLevelMockCalls.push(mockCall);
           }
         }
 
@@ -119,6 +122,7 @@ export class JestTestAnalyzer {
     return {
       testFilePath: this.normalizePath(sourceFile.fileName),
       testBlocks,
+      fileLevelMockCalls,
       unsupportedConstructs,
     };
   }
