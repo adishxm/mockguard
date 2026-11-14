@@ -11,4 +11,4 @@ Fill this before implementation. Names are intentionally blank in the planning a
 | Correlation and reports | TBD | TBD | TBD | PLANNED |
 | Evaluation corpus | TBD | TBD | TBD | PLANNED |
 | Demo and README | TBD | TBD | TBD | PLANNED |
-| Security/release review | TBD | TBD | TBD | PLANNED |
+| Security/release review | Worker 03 | Worker 01 | Phase 0/1 | ACTIVE |

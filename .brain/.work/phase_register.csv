@@ -1,5 +1,5 @@
 phase,objective,entry_gate,exit_gate,owner,reviewer,artifact,status
-P0,contracts and threat freeze,team roster and scope,schemas decisions and claims approved,all,all,phase_p0_gate.md,PLANNED
+P0,contracts and threat freeze,team roster and scope,schemas decisions and claims approved,all,all,phase_p0_gate.md,PASSED
 P1,reproducible foundation,contracts approved,clean fixture baseline and runner,worker_01,worker_03,phase_p1_report.md,PLANNED
 P2,static inspection,corpus labels approved,source citations and rules tested,worker_02,worker_03,phase_p2_report.md,PLANNED
 P3,mutation proof,runner stable,replayable killed/survived results,worker_02,worker_01,phase_p3_report.md,PLANNED

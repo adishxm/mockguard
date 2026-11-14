@@ -31,3 +31,4 @@
 - **To Worker 01**: Hardened CI workflow is ready. Worker 01 can now implement project config discovery, process supervisor, and baseline runner.
 - **To Worker 02**: Security baseline is established. Worker 02 can proceed with AST rules and grammar parsing.
 - **To Worker 04**: Governance and licensing are verified for submission checklist.
+

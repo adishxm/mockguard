@@ -57,3 +57,4 @@ jobs:
           if [ -f package.json ] && npm run | grep -q "test"; then
             npm test -- --ci --maxWorkers=2
           fi
+
