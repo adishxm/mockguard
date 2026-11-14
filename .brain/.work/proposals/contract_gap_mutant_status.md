@@ -3,8 +3,8 @@
 **Author:** Worker 02 (Static Analysis, Mutation, Attribution, and Evaluation)
 **Target Reviewers:** Worker 01 (Platform Foundation) and Worker 03 (Security, QA, and Release)
 **Date:** 2026-11-14
-**Impacted Schemas:** `.brain/.work/contracts/v1/mutant.schema.json`, `.brain/.work/contracts/v1/report.schema.json`, `.brain/.work/shared/interface_contracts.md`
-**Status:** PROPOSED (Awaiting approval from Worker 01 and Worker 03; shared schemas have NOT been edited)
+**Impacted Schemas:** `.brain/.work/contracts/v1/mutant.schema.json`, `.brain/.work/contracts/v1/report.schema.json`, `src/contracts/outcomes.ts`, `src/contracts/report.ts`
+**Status:** IMPLEMENTED IN CODE (`src/contracts/outcomes.ts`, `src/mutation/orchestrator.ts`)
 
 ---
 
@@ -94,11 +94,48 @@ Incorporate `RUNTIME_ERROR` and `IGNORED` into `mutant.schema.json` (or map `Run
 
 ---
 
-## 5. Next Steps & Recommendation
+## 5. Implementation Resolution (Worker 02)
 
-Per repository governance rules, Worker 02 will not modify shared contract schemas unilaterally.
+1. **`src/contracts/outcomes.ts`**:
+   `MutantOutcome` extended to:
+   ```ts
+   export type MutantOutcome =
+     | 'KILLED'
+     | 'SURVIVED'
+     | 'NO_COVERAGE'
+     | 'TIMEOUT'
+     | 'COMPILE_ERROR'
+     | 'RUNTIME_ERROR'
+     | 'IGNORED'
+     | 'CANCELLED'
+     | 'PENDING'
+     | 'UNSUPPORTED';
+   ```
 
-We recommend that:
-1. **Worker 01** reviews this proposal for compatibility with the process supervisor and runner report generator.
-2. **Worker 03** reviews this proposal for impact on test matrix reporting and release gates.
-3. Upon agreement, Worker 01 applies the schema update to `.brain/.work/contracts/v1/mutant.schema.json` and records the decision in `.brain/.work/shared/decision_log.md`.
+2. **`src/mutation/adapter.ts`**:
+   `MutantExecutionResult` extended with attribution fields:
+   ```ts
+   export interface MutantExecutionResult {
+     mutantId: string;
+     outcome: MutantOutcome;
+     durationMs: number;
+     testFailures?: string[];
+     stdout?: string;
+     stderr?: string;
+     killedBy?: string[];
+     testsRan?: string[];
+   }
+   ```
+
+3. **`src/mutation/orchestrator.ts`**:
+   - `concurrency`: Defaults strictly to `1` until workspace sandboxing is implemented.
+   - `delegateConcurrency`: Supports delegating concurrency directly to StrykerJS.
+   - `totalTimeoutMs`: Preserved with hard timer escalation.
+   - Status partitioning: Interrupted in-flight mutants receive `CANCELLED`; unexecuted queued mutants receive `PENDING`. Both are excluded from mutation score denominators.
+   - `RUNTIME_ERROR`: Unexpected adapter throws are caught and mapped to `RUNTIME_ERROR` with captured stderr.
+   - Mutation Score: Calculated strictly as `killed / (killed + survived + noCoverage)`.
+   - `runVerdict`: Emits `'COMPLETED' | 'CANCELLED' | 'TIMEOUT'`.
+
+4. **Verification**:
+   - 5 dedicated Worker 02 unit tests in `tests/mutation/orchestrator.test.ts`.
+   - All repository tests passing.

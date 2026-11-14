@@ -18,6 +18,8 @@ export interface MutantExecutionResult {
   testFailures?: string[];
   stdout?: string;
   stderr?: string;
+  killedBy?: string[];
+  testsRan?: string[];
 }
 
 export interface MutationAdapter {

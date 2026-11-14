@@ -48,6 +48,12 @@ export interface MutationSection {
   survived: number;
   timeouts: number;
   compileErrors: number;
+  noCoverage?: number;
+  runtimeErrors?: number;
+  ignored?: number;
+  cancelled?: number;
+  pending?: number;
+  unsupported?: number;
   score: number | null; // INVARIANT: null when baseline fails
   excludedMutants?: string[];
 }

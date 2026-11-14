@@ -25,9 +25,13 @@ export type FindingKind =
 export type MutantOutcome =
   | 'KILLED'
   | 'SURVIVED'
+  | 'NO_COVERAGE'
   | 'TIMEOUT'
   | 'COMPILE_ERROR'
+  | 'RUNTIME_ERROR'
+  | 'IGNORED'
   | 'CANCELLED'
+  | 'PENDING'
   | 'UNSUPPORTED';
 
 export type BaselineStatus =
