@@ -1,0 +1,6 @@
+provider,role,default_enabled,data_sent,terms_gate,status
+StrykerJS,mutation adapter,no,local source/config only,version/license review,PLANNED
+Jest,test runner,no,local project only,version/license review,PLANNED
+Gemini API,advisory explanation and suggestion,no,explicit bounded excerpts only,model/privacy/terms/cost review,OPTIONAL
+Optional LLM,generic future provider,no,explicit bounded context,privacy and cost review,DISABLED
+OpenSSF Scorecard,release posture,no,public repository metadata if manually run,terms and token review,OPTIONAL

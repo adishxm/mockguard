@@ -1,0 +1,11 @@
+case_id,category,fixture,expected_status,evidence
+MG-001,baseline,order-service,PASS,baseline report
+MG-002,weak-mock,weak-mock-result,SURVIVED,static finding plus mutant
+MG-003,strong-behavior,strong-behavior-test,KILLED,mutation result
+MG-004,valid-mock,valid-boundary-mock,WARN_OR_PASS,no high-confidence false block
+MG-005,mocked-sut,mocked-sut,MOCKED_SUT,source line finding
+MG-006,timeout,timeout-fixture,TIMEOUT,process supervisor record
+MG-007,compile-error,compile-error-fixture,COMPILE_ERROR,mutant record
+MG-008,unsupported,unsupported-syntax,UNSUPPORTED,abstention record
+MG-009,baseline-fail,baseline-fail-fixture,BASELINE_FAILED,no score
+MG-010,demo,order-service,REPLAYABLE,three-minute run

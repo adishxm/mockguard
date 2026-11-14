@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mockguard.dev/schemas/mutant/v1",
+  "title": "MockGuard mutant v1",
+  "type": "object",
+  "required": ["id", "operator", "source", "original", "mutated", "status"],
+  "properties": {
+    "id": {"type": "string"},
+    "operator": {"type": "string"},
+    "source": {"type": "object", "required": ["file", "startLine", "startColumn"]},
+    "original": {"type": "string"},
+    "mutated": {"type": "string"},
+    "status": {"enum": ["KILLED", "SURVIVED", "TIMEOUT", "COMPILE_ERROR", "CANCELLED", "EQUIVALENT_CANDIDATE"]},
+    "testIds": {"type": "array"}
+  }
+}

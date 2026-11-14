@@ -1,0 +1,6 @@
+{
+  "id": "baseline-failed",
+  "expected": "BASELINE_FAILED",
+  "mutationScore": null,
+  "status": "PLANNED"
+}

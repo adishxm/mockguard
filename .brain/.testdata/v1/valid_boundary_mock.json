@@ -1,0 +1,8 @@
+{
+  "id": "valid-boundary-mock",
+  "framework": "jest",
+  "kind": "valid",
+  "expectedStatic": "ALLOW_OR_LOW_CONFIDENCE",
+  "expectedDynamic": "KILLED",
+  "status": "PLANNED"
+}

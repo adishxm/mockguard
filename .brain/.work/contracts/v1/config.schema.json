@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mockguard.dev/schemas/config/v1",
+  "title": "MockGuard config v1",
+  "type": "object",
+  "properties": {
+    "runner": {"type": "object", "properties": {"name": {"const": "jest"}, "command": {"type": "array", "items": {"type": "string"}}}},
+    "scope": {"type": "object", "properties": {"source": {"type": "array"}, "tests": {"type": "array"}}},
+    "limits": {"type": "object", "properties": {"perMutantMs": {"type": "integer", "minimum": 1}, "totalMs": {"type": "integer", "minimum": 1}, "maxOutputBytes": {"type": "integer", "minimum": 1}}}
+  },
+  "additionalProperties": false
+}

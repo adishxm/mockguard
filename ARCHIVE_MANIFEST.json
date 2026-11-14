@@ -1,0 +1,20 @@
+{
+  "project": "MockGuard",
+  "problem_statement": "PS #41 \u2014 AI-generated tests test the mock, not the code",
+  "track": "Developer Tools, CI/CD & Open Source",
+  "status": "planning workspace",
+  "contents": "Consolidated blueprints plus complete .brain planning workspace",
+  "generated": "2026-11-14",
+  "team_model": "3 builders + 1 pitch/deck owner",
+  "original_research_attachments": 6,
+  "brain_files": 107,
+  "production_phase_plan": true,
+  "production_operating_system": true,
+  "versioned_contracts": true,
+  "sre_security_qa_layers": true,
+  "pitch_evidence_controls": true,
+  "source_register_additions": 5,
+  "org_research_files": 13,
+  "total_files": 121,
+  "gemini_integration": true
+}

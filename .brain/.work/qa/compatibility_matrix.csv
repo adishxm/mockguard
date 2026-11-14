@@ -1,0 +1,8 @@
+component,minimum,preferred,maximum_tested,status
+Node.js,20,22,24,PLANNED
+Jest,30,30,30,PLANNED
+TypeScript,5.4,5.8,latest-supported,PLANNED
+StrykerJS,current-supported,current-supported,current-supported,PLANNED
+Ubuntu,22.04,24.04,latest,PLANNED
+macOS,latest,latest,latest,PLANNED
+Windows,latest,latest,latest,PLANNED

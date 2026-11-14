@@ -1,0 +1,19 @@
+# Package & build artifacts
+node_modules/
+dist/
+build/
+coverage/
+
+# Archive files
+*.zip
+*.tar.gz
+
+# Environment & local settings
+.env
+.env*.local
+
+# System & editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

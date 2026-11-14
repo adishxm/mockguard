@@ -1,0 +1,8 @@
+slide,claim,evidence_source,allowed_wording,status
+1,AI tests can be green without protecting behavior,PS41 + fixture,Problem framing not universal prevalence,PLANNED
+2,Coverage is incomplete,official coverage/mutation docs,Execution signal vs behavioral counterfactual,PLANNED
+3,MockGuard combines static and dynamic evidence,architecture/report,Team design until implemented,PLANNED
+4,The weak test leaves a mutant alive,final benchmark report,Use exact measured case,PLANNED
+5,The improved test kills it,final benchmark report,Use exact measured case,PLANNED
+6,Production controls exist,security/release gates,State implemented controls only,PLANNED
+7,Future adapters are possible,roadmap,Do not imply current support,PLANNED

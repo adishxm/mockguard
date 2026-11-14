@@ -1,0 +1,15 @@
+{
+  "ai": {
+    "enabled": false,
+    "provider": "gemini",
+    "model": "<pin-a-supported-model>",
+    "mode": "suggest-assertion",
+    "maxInputBytes": 24000,
+    "maxOutputTokens": 1200,
+    "timeoutMs": 20000,
+    "maxRequestsPerRun": 3,
+    "sendSourceByDefault": false,
+    "requireUserConfirmationBeforeSend": true,
+    "applyPatchesAutomatically": false
+  }
+}

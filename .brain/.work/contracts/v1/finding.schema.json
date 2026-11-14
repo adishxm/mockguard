@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mockguard.dev/schemas/finding/v1",
+  "title": "MockGuard finding v1",
+  "type": "object",
+  "required": ["id", "kind", "confidence", "message", "locations", "evidence"],
+  "properties": {
+    "id": {"type": "string"},
+    "kind": {"enum": ["MOCK_ASSERTION", "MOCKED_SUT", "CALL_ONLY_ASSERTION", "NO_ASSERTION", "UNSUPPORTED_PATTERN"]},
+    "confidence": {"enum": ["high", "medium", "low", "unverified"]},
+    "message": {"type": "string"},
+    "locations": {"type": "array"},
+    "evidence": {"type": "array"},
+    "relatedMutantIds": {"type": "array"}
+  }
+}

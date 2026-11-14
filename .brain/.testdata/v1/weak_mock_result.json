@@ -1,0 +1,8 @@
+{
+  "id": "weak-mock-result",
+  "framework": "jest",
+  "kind": "weak",
+  "expectedStatic": "MOCK_ASSERTION",
+  "expectedDynamic": "SURVIVED",
+  "status": "PLANNED"
+}

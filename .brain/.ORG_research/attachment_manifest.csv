@@ -1,0 +1,7 @@
+filename,type,role,handling,status
+MutationTruth-PS41-Complete-Research.md,markdown,complete research dossier,preserved original; derived MockGuard copy in docs,RECEIVED
+MutationTruth-PS41-Complete-Research.pdf,pdf,rendered research dossier,preserved original for visual review,RECEIVED
+MutationTruth_Master_Blueprint_PS41.md,markdown,master product and engineering blueprint,preserved original; renamed derived copy in docs,RECEIVED
+TestGuard Master Blueprint for PS #41.md,markdown,evidence and product blueprint,preserved original; renamed derived copy in docs,RECEIVED
+prooftest_blueprint.md,markdown,R&D blueprint,preserved original; renamed derived copy in docs,RECEIVED
+prooftest_final_engineering_spec.md,markdown,final engineering specification,preserved original; renamed derived copy in docs,RECEIVED

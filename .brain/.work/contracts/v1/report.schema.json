@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mockguard.dev/schemas/report/v1",
+  "title": "MockGuard report v1",
+  "type": "object",
+  "required": ["schemaVersion", "tool", "project", "runner", "baseline", "analysis", "mutation", "claims"],
+  "properties": {
+    "schemaVersion": {"const": "mockguard.report.v1"},
+    "tool": {"type": "object", "required": ["name", "version"]},
+    "project": {"type": "object", "required": ["root"]},
+    "runner": {"type": "object", "required": ["name", "command", "status", "durationMs"]},
+    "baseline": {"type": "object", "required": ["status"]},
+    "analysis": {"type": "object", "required": ["findings"]},
+    "mutation": {"type": "object", "required": ["valid", "killed", "survived", "timeouts", "compileErrors"]},
+    "claims": {"type": "object", "required": ["sandboxed", "equivalentMutantsDetected"]}
+  },
+  "additionalProperties": true
+}

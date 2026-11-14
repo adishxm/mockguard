@@ -1,0 +1,6 @@
+{
+  "id": "surviving-conditional-mutant",
+  "operator": "ConditionalExpression",
+  "expected": "SURVIVED",
+  "status": "PLANNED"
+}
