@@ -25,7 +25,8 @@
     "checksums": "node scripts/generate-checksums.js",
     "smoke:tarball": "node scripts/smoke-test-tarball.js",
     "release:check": "node scripts/release-check.js",
-    "gemini:advisory": "npm run build:test && node dist/gemini_integration/run_advisory.js"
+    "gemini:advisory": "npm run build:test && node dist/gemini_integration/run_advisory.js",
+    "demo": "node scripts/run-demo.js"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

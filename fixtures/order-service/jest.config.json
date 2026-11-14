@@ -1,0 +1,6 @@
+{
+  "testEnvironment": "node",
+  "transform": {},
+  "testMatch": ["**/*.test.js", "**/*.test.ts"],
+  "moduleFileExtensions": ["js", "ts", "json"]
+}
