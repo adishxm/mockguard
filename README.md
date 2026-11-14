@@ -6,7 +6,7 @@
 [![CodeQL Security](https://github.com/adishxm/mockguard/actions/workflows/codeql.yml/badge.svg)](https://github.com/adishxm/mockguard/actions/workflows/codeql.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18.0.0-green.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-77%20passing-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-86%20passing-brightgreen.svg)](tests/)
 
 MockGuard is a developer tool and CI guardrail built for **HackMatrix Problem Statement #41: "AI-generated tests test the mock, not the code."** It combines static AST mock-pattern analysis with controlled mutation testing to verify whether a passing (green) test suite actually detects regressions in production behavior.
 
@@ -148,7 +148,7 @@ MockGuard is designed with security-first boundaries governed by [`.brain/.work/
 
 ## Verification & Test Suite
 
-MockGuard maintains an automated test suite with **77 passing tests** executed across Node **18.x**, **20.x**, and **22.x** in GitHub Actions:
+MockGuard maintains an automated test suite with **86 passing tests** executed across Node **18.x**, **20.x**, and **22.x** in GitHub Actions:
 
 - **Platform & Runner Acceptance (27 tests)**: CLI parsing, project auto-discovery, monorepo support, process supervisor timeouts, child tree termination, baseline execution, concurrency pools, and report builders.
 - **Static Analysis & Rule Engine (14 tests)**: AST symbol resolution, import alias handling, and P2 rules (`MOCKED_SUT`, `CALL_ONLY_ASSERTION`, `MOCK_ASSERTION`, `NO_ASSERTION`, `UNSUPPORTED_PATTERN`).
