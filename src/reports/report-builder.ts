@@ -125,7 +125,7 @@ export class ReportBuilder {
     };
   }
 
-  public static writeJson(report: MockGuardReport, filePath: string): void {
+  public static writeJson(report: unknown, filePath: string): void {
     const dir = path.dirname(path.resolve(filePath));
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });

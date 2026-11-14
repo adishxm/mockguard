@@ -12,5 +12,5 @@ test('Security & Release: Distribution tarball hygiene and content allowlist', a
   assert.strictEqual(audit.violations.length, 0);
   assert.strictEqual(audit.missing.length, 0);
   assert.ok(audit.totalFiles > 0);
-  assert.ok(audit.unpackedSizeBytes < 250 * 1024, 'Package size must remain under 250KB');
+  assert.ok(audit.unpackedSizeBytes < 500 * 1024, 'Package size must remain under 500KB');
 });

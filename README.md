@@ -6,7 +6,7 @@
 [![CodeQL Security](https://github.com/adishxm/mockguard/actions/workflows/codeql.yml/badge.svg)](https://github.com/adishxm/mockguard/actions/workflows/codeql.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18.0.0-green.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-40%20passing-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-77%20passing-brightgreen.svg)](tests/)
 
 MockGuard is a developer tool and CI guardrail built for **HackMatrix Problem Statement #41: "AI-generated tests test the mock, not the code."** It combines static AST mock-pattern analysis with controlled mutation testing to verify whether a passing (green) test suite actually detects regressions in production behavior.
 
@@ -66,11 +66,17 @@ node dist/src/cli/index.js --help
 # Run baseline verification on a target project
 node dist/src/cli/index.js baseline ./my-project
 
-# Run complete mock verification with terminal output
+# Run complete mock verification with static analysis and mutation testing
 node dist/src/cli/index.js verify ./my-project
+
+# Run revision comparison between a base Git commit and current working tree
+node dist/src/cli/index.js compare --base HEAD~1 ./my-project
 
 # Export structured JSON report with secret redaction
 node dist/src/cli/index.js verify ./my-project --format json --out ./mockguard-report.json
+
+# Run the interactive in-depth CLI demo
+npm run demo:cli
 ```
 
 ---
@@ -79,15 +85,20 @@ node dist/src/cli/index.js verify ./my-project --format json --out ./mockguard-r
 
 | Flag | Default | Description |
 |---|---|---|
-| `command` | `verify` | Command to execute: `verify`, `baseline`, `help`, `version` |
+| `command` | `verify` | Command to execute: `verify`, `baseline`, `compare`, `help`, `version` |
 | `targetPath` | `.` | Target project directory containing `package.json` and Jest tests |
+| `--base <git-ref>` | *None* | Base Git commit, branch, or tag to compare against current working tree (required for `compare`) |
 | `-c, --config <path>` | *Auto-discovered* | Explicit path to Jest configuration file (`jest.config.js`, `.json`, `.ts`) |
 | `-f, --format <format>` | `terminal` | Report format: `terminal` or `json` |
 | `-o, --out <path>` | *stdout* | Output file path for generated JSON report |
 | `--timeout <ms>` | `60000` | Process timeout per test execution in milliseconds |
+| `--max-mutants <n>` | `20` | Maximum number of deterministic AST mutants to generate and evaluate |
 | `--concurrency <n>` | `1` | Number of parallel worker processes for mutation runs |
 | `--bail` | `false` | Stop immediately on first surviving mutant or baseline failure |
-| `--testNamePattern <p>` | *All* | Filter tests by pattern |
+| `--test-match <glob>` | *All* | Filter test files matching glob pattern |
+| `--include <glob>` | *All* | Source file inclusion pattern |
+| `--exclude <glob>` | *None* | Source file exclusion pattern |
+| `-t, --testNamePattern <p>` | *All* | Filter tests by pattern |
 | `--changed` | `false` | Only analyze tests covering uncommitted Git changes |
 
 ---
@@ -137,15 +148,17 @@ MockGuard is designed with security-first boundaries governed by [`.brain/.work/
 
 ## Verification & Test Suite
 
-MockGuard maintains an automated test suite with **40 passing tests** executed across Node **18.x**, **20.x**, and **22.x** in GitHub Actions:
+MockGuard maintains an automated test suite with **77 passing tests** executed across Node **18.x**, **20.x**, and **22.x** in GitHub Actions:
 
-- **Platform Acceptance (27 tests)**: CLI parsing, project auto-discovery, monorepo support, process supervisor timeouts, child tree termination, baseline execution, concurrency pools, and report builders.
-- **Mutation & Status Model (5 tests)**: StrykerJS coordinator delegation, extended status classification (`NO_COVERAGE`, `RUNTIME_ERROR`), and mutation cancellation.
-- **Security & QA (8 tests)**: Secret token masking, process timeouts, memory output bounds, environment variable isolation, path traversal rejection, tarball packaging allowlists, and SPDX 2.3 SBOM generation.
+- **Platform & Runner Acceptance (27 tests)**: CLI parsing, project auto-discovery, monorepo support, process supervisor timeouts, child tree termination, baseline execution, concurrency pools, and report builders.
+- **Static Analysis & Rule Engine (14 tests)**: AST symbol resolution, import alias handling, and P2 rules (`MOCKED_SUT`, `CALL_ONLY_ASSERTION`, `MOCK_ASSERTION`, `NO_ASSERTION`, `UNSUPPORTED_PATTERN`).
+- **AST Mutation Engine (10 tests)**: Deterministic mutant generation across 4 operator categories (`BooleanLiteralFlip`, `ComparisonOperatorReplacement`, `NumericBoundaryMutation`, `PrimitiveReturnMutation`), bounded concurrency, total timeout, and isolated sandbox execution without touching source files.
+- **Git Revision Comparator (5 tests)**: Commit resolution, dirty working tree detection, temporary worktree lifecycle, and delta report generation.
+- **Security & QA Release (19 tests)**: Secret token masking, process timeouts, memory output bounds, environment variable isolation, path traversal rejection, tarball packaging allowlists, and SPDX 2.3 SBOM generation.
 
 ```bash
 npm test
-# ℹ tests 40 | suites 0 | pass 40 | fail 0
+# ℹ tests 77 | suites 0 | pass 77 | fail 0
 ```
 
 ---
