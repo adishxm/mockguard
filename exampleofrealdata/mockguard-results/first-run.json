@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "mockguard.report.v1",
+  "tool": {
+    "name": "mockguard",
+    "version": "0.1.0"
+  },
+  "project": {
+    "root": "C:\\Users\\adity\\OneDrive\\Desktop\\HackMatrix-Practise\\your-project",
+    "commit": null
+  },
+  "runner": {
+    "name": "jest",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\adity\\OneDrive\\Desktop\\HackMatrix-Practise\\your-project\\run-jest.js",
+      "--no-colors"
+    ],
+    "exitCode": 0,
+    "durationMs": 690
+  },
+  "baseline": {
+    "status": "PASS",
+    "testsPassed": 1,
+    "testsTotal": 1
+  },
+  "analysis": {
+    "findings": [
+      {
+        "id": "FINDING-1-CALL_ONLY_ASSERTION",
+        "kind": "CALL_ONLY_ASSERTION",
+        "severity": "medium",
+        "message": "Test 'confirms an order after successful payment' relies solely on call/interaction assertions without verifying return values, state changes, or negative side effects.",
+        "file": "..\\mockguard\\tests\\checkout.test.ts",
+        "line": 21,
+        "column": 5,
+        "snippet": "Call-only assertion 'expect(paymentMock).toHaveBeenCalledWith(100)' at line 21 verifies invocation presence without inspecting state or return values."
+      }
+    ]
+  },
+  "mutation": {
+    "valid": 5,
+    "killed": 1,
+    "survived": 4,
+    "timeouts": 0,
+    "compileErrors": 0,
+    "score": 20
+  },
+  "claims": {
+    "equivalentMutantsDetected": false,
+    "sandboxed": false
+  },
+  "geminiAdvisory": {
+    "status": "OFFLINE_FALLBACK",
+    "model": "gemini-2.5-flash",
+    "targetMutant": "M-33ee5076",
+    "rootCause": "Test only checks expect(mock).toHaveBeenCalled() without inspecting return values, state changes, or business side effects. (Set GEMINI_API_KEY to query Google AI Studio live)",
+    "suggestedAssertion": "Replace interaction checks with state assertions verifying the observable outcome of the operation.",
+    "remediationSnippet": "// Suggested Gemini Behavioral Fix:\nconst result = checkout(\"SUCCESS\");\nexpect(result.orderStatus).toBe(\"CONFIRMED\");\nexpect(result.fulfillmentEvent).toBe(true);"
+  },
+  "artifacts": [],
+  "verdict": "FAIL",
+  "runId": "run-90d0f3d341ec",
+  "timestamp": "2026-11-14T11:13:54.831Z"
+}

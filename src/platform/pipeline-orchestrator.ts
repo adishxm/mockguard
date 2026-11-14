@@ -302,11 +302,13 @@ export class PipelineOrchestrator {
             !name.includes('jest.config') &&
             !name.includes('tsconfig')
           ) {
-            const rel = path.relative(projectRoot, fullPath);
-            if (includePattern && !rel.includes(includePattern.replace(/\*/g, ''))) {
+            const rel = path.relative(projectRoot, fullPath).replace(/\\/g, '/');
+            const cleanInc = includePattern ? includePattern.replace(/\\/g, '/').replace(/\*/g, '') : '';
+            const cleanExc = excludePattern ? excludePattern.replace(/\\/g, '/').replace(/\*/g, '') : '';
+            if (cleanInc && !rel.includes(cleanInc)) {
               continue;
             }
-            if (excludePattern && rel.includes(excludePattern.replace(/\*/g, ''))) {
+            if (cleanExc && rel.includes(cleanExc)) {
               continue;
             }
             results.push(fullPath);
@@ -349,8 +351,9 @@ export class PipelineOrchestrator {
             (name.endsWith('.ts') || name.endsWith('.js'))
           ) {
             if (testMatchGlob) {
-              const filterClean = testMatchGlob.replace(/\*/g, '');
-              if (!fullPath.includes(filterClean)) {
+              const filterClean = testMatchGlob.replace(/\\/g, '/').replace(/\*/g, '');
+              const normPath = fullPath.replace(/\\/g, '/');
+              if (!normPath.includes(filterClean)) {
                 continue;
               }
             }
