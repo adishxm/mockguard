@@ -36,9 +36,11 @@
 
 ## 3. Test & Verification Evidence
 - **Test Command**: `npm test` (`node scripts/test-runner.js`)
-- **Total Tests**: 28 passing / 0 failing (100% pass rate)
+- **Total Tests**: 30 passing / 0 failing (100% pass rate)
   - 22 Platform Acceptance Tests (`tests/platform/acceptance.test.ts`)
   - 6 Security & Boundary Tests (`tests/security/security-boundaries.test.ts`)
+  - 1 Packaging Hygiene & Content Allowlist Test (`tests/security/packaging.test.ts`)
+  - 1 SPDX 2.3 SBOM Generation Test (`tests/security/sbom.test.ts`)
 - **Execution Matrix in CI**:
   - Node 18.x: PASS
   - Node 20.x: PASS
@@ -59,3 +61,4 @@
   - Worker 02 can now plug AST parsing rules (`MOCK_ASSERTION`, `MOCKED_SUT`, etc.) into the pipeline.
 - **To Worker 04 (Pitch & Narrative)**:
   - Platform timings and report schemas are stable; first terminal output captures are ready for slide drafting.
+

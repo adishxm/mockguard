@@ -1,8 +1,8 @@
 component,minimum,preferred,maximum_tested,status
-Node.js,20,22,24,PLANNED
-Jest,30,30,30,PLANNED
-TypeScript,5.4,5.8,latest-supported,PLANNED
-StrykerJS,current-supported,current-supported,current-supported,PLANNED
-Ubuntu,22.04,24.04,latest,PLANNED
-macOS,latest,latest,latest,PLANNED
-Windows,latest,latest,latest,PLANNED
+Node.js,18.0.0,20.x / 22.x,24.x,TESTED
+Jest,29.0.0,29.7.0,30.0.0,TESTED
+TypeScript,5.3.3,5.4.x,5.9.3,TESTED
+StrykerJS,8.0.0,current-supported,current-supported,PLANNED
+Ubuntu,22.04,24.04,latest,TESTED
+macOS,13.0,latest,latest,PLANNED
+Windows,10,11 x64,latest,TESTED

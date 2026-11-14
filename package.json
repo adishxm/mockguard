@@ -19,7 +19,9 @@
     "build:test": "tsc -p tsconfig.test.json",
     "pretest": "npm run build:test",
     "test": "node scripts/test-runner.js",
-    "watch": "tsc -p tsconfig.test.json --watch"
+    "watch": "tsc -p tsconfig.test.json --watch",
+    "verify:package": "node scripts/verify-package.js",
+    "sbom": "node scripts/generate-sbom.js"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
