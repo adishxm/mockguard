@@ -321,7 +321,6 @@ test('22. Regression: ReportBuilder captures git commit SHA', () => {
 });
 
 test('23. Regression: test-runner argument filtering strips Jest flags', async () => {
-  // Dynamically import test-runner module using absolute path to work regardless of dist location
   const testRunnerPath = path.resolve('scripts/test-runner.js');
   const { filterTestRunnerArgs } = await import(`file://${testRunnerPath}`);
 
@@ -347,4 +346,73 @@ test('24. Regression: test-runner rejects zero compiled test files cleanly', asy
   const found = findTestFiles(tempDir);
   assert.strictEqual(found.length, 0);
   fs.rmSync(tempDir, { recursive: true, force: true });
+});
+
+test('25. P4/P5: MutationOrchestrator bounded concurrency pool', async () => {
+  let activeWorkers = 0;
+  let maxObservedConcurrency = 0;
+
+  const mockAdapter: MutationAdapter = {
+    name: 'concurrency-adapter',
+    async generateMutants() { return []; },
+    async testMutant(m: MutantDefinition): Promise<MutantExecutionResult> {
+      activeWorkers++;
+      maxObservedConcurrency = Math.max(maxObservedConcurrency, activeWorkers);
+      await new Promise(resolve => setTimeout(resolve, 50));
+      activeWorkers--;
+      return { mutantId: m.id, outcome: 'KILLED', durationMs: 50 };
+    }
+  };
+
+  const mutants: MutantDefinition[] = [
+    { id: 'm-1', file: 'f.ts', line: 1, column: 1, originalText: 'a', mutatedText: 'b', operator: 'op' },
+    { id: 'm-2', file: 'f.ts', line: 2, column: 1, originalText: 'a', mutatedText: 'b', operator: 'op' },
+    { id: 'm-3', file: 'f.ts', line: 3, column: 1, originalText: 'a', mutatedText: 'b', operator: 'op' },
+    { id: 'm-4', file: 'f.ts', line: 4, column: 1, originalText: 'a', mutatedText: 'b', operator: 'op' },
+  ];
+
+  const orchestrator = new MutationOrchestrator();
+  const summary = await orchestrator.orchestrate(mockAdapter, mutants, ['test'], {
+    concurrency: 2
+  });
+
+  assert.strictEqual(summary.killed, 4);
+  assert.ok(maxObservedConcurrency <= 2, `Expected concurrency <= 2, got ${maxObservedConcurrency}`);
+});
+
+test('26. P4/P5: MutationOrchestrator total execution timeout', async () => {
+  const slowAdapter: MutationAdapter = {
+    name: 'slow-adapter',
+    async generateMutants() { return []; },
+    async testMutant(m: MutantDefinition): Promise<MutantExecutionResult> {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return { mutantId: m.id, outcome: 'KILLED', durationMs: 300 };
+    }
+  };
+
+  const mutants: MutantDefinition[] = [
+    { id: 'm-1', file: 'f.ts', line: 1, column: 1, originalText: 'a', mutatedText: 'b', operator: 'op' },
+    { id: 'm-2', file: 'f.ts', line: 2, column: 1, originalText: 'a', mutatedText: 'b', operator: 'op' },
+    { id: 'm-3', file: 'f.ts', line: 3, column: 1, originalText: 'a', mutatedText: 'b', operator: 'op' },
+  ];
+
+  const orchestrator = new MutationOrchestrator();
+  const summary = await orchestrator.orchestrate(slowAdapter, mutants, ['test'], {
+    totalTimeoutMs: 150, // Total timeout expires before all 3 finish
+    concurrency: 1
+  });
+
+  assert.ok(summary.cancelled >= 1, 'Expected at least one cancelled mutant due to total timeout');
+});
+
+test('27. P5: ConfigResolver testNamePattern and changed flags', () => {
+  const project = ProjectDiscovery.discover(process.cwd());
+  const resolved = ConfigResolver.resolve(project, {
+    testNamePattern: 'Payment.*',
+    changed: true,
+  });
+
+  assert.ok(resolved.args.includes('--testNamePattern'));
+  assert.ok(resolved.args.includes('Payment.*'));
+  assert.ok(resolved.args.includes('--onlyChanged'));
 });

@@ -11,6 +11,8 @@ export interface CliOptions {
   concurrency: number;
   testMatch?: string;
   bail: boolean;
+  testNamePattern?: string;
+  changed?: boolean;
 }
 
 export const DEFAULT_CLI_OPTIONS: CliOptions = {
@@ -21,6 +23,7 @@ export const DEFAULT_CLI_OPTIONS: CliOptions = {
   maxOutputBytes: 10 * 1024 * 1024, // 10 MB
   concurrency: 1,
   bail: false,
+  changed: false,
 };
 
 export function parseCliArgs(args: string[]): CliOptions {
@@ -138,6 +141,25 @@ export function parseCliArgs(args: string[]): CliOptions {
       continue;
     }
 
+    if (arg === '--testNamePattern' || arg === '-t') {
+      const next = args[++i];
+      if (!next || next.startsWith('-')) {
+        throw new Error(`Flag ${arg} requires a regex/name pattern.`);
+      }
+      options.testNamePattern = next;
+      continue;
+    }
+
+    if (arg.startsWith('--testNamePattern=')) {
+      options.testNamePattern = arg.slice('--testNamePattern='.length);
+      continue;
+    }
+
+    if (arg === '--changed') {
+      options.changed = true;
+      continue;
+    }
+
     if (arg === '--bail') {
       options.bail = true;
       continue;
@@ -177,14 +199,16 @@ COMMANDS:
   baseline     Run Jest baseline test suite only
 
 OPTIONS:
-  -c, --config <file>        Explicit path to jest.config.(js|ts|json)
-  -f, --format <format>      Output format: 'terminal' | 'json' (default: terminal)
-  -o, --out <file>           Output file for JSON report
-      --timeout <ms>         Process execution timeout in ms (default: 60000)
-      --concurrency <n>      Number of concurrent worker processes (default: 1)
-      --testMatch <glob>     Test file pattern to match
-      --bail                 Stop on first mutation survival
-  -h, --help                 Display this help message
-  -v, --version              Display MockGuard version
+  -c, --config <file>             Explicit path to jest.config.(js|ts|json)
+  -f, --format <format>           Output format: 'terminal' | 'json' (default: terminal)
+  -o, --out <file>                Output file for JSON report
+      --timeout <ms>              Process execution timeout in ms (default: 60000)
+      --concurrency <n>           Number of concurrent worker processes (default: 1)
+      --testMatch <glob>          Test file pattern to match
+  -t, --testNamePattern <pattern> Run tests matching the regex pattern
+      --changed                   Only run tests related to changed files (Git)
+      --bail                      Stop on first mutation survival
+  -h, --help                      Display this help message
+  -v, --version                   Display MockGuard version
 `);
 }

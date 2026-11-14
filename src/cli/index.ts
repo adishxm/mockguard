@@ -45,6 +45,8 @@ export async function main(): Promise<void> {
     // 2. Resolve Test Command
     const testCommand = ConfigResolver.resolve(project, {
       testMatch: options.testMatch,
+      testNamePattern: options.testNamePattern,
+      changed: options.changed,
       bail: options.bail,
     });
 

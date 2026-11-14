@@ -13,7 +13,12 @@ export interface ResolvedTestCommand {
 export class ConfigResolver {
   public static resolve(
     project: DiscoveredProject,
-    options: { testMatch?: string; bail?: boolean } = {}
+    options: {
+      testMatch?: string;
+      bail?: boolean;
+      testNamePattern?: string;
+      changed?: boolean;
+    } = {}
   ): ResolvedTestCommand {
     const cwd = project.projectRoot;
 
@@ -40,6 +45,14 @@ export class ConfigResolver {
 
     if (options.testMatch) {
       args.push('--testMatch', options.testMatch);
+    }
+
+    if (options.testNamePattern) {
+      args.push('--testNamePattern', options.testNamePattern);
+    }
+
+    if (options.changed) {
+      args.push('--onlyChanged');
     }
 
     if (options.bail) {
