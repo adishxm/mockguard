@@ -1,0 +1,28 @@
+# MockGuard Packaging Exclusion Rules (Worker 03)
+
+# Exclude internal architecture, plans, and research workspaces
+.brain/
+docs/
+gemini_integration/
+.testdata/
+
+# Exclude test files and test distributions
+tests/
+dist/tests/
+tsconfig*.json
+
+# Exclude CI/CD, development, and GitHub configurations
+.github/
+.vscode/
+.idea/
+
+# Exclude build & test artifacts
+coverage/
+*.log
+*.zip
+*.tar.gz
+
+# Exclude developer environment and git files
+.git/
+.gitignore
+.gitattributes
