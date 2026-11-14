@@ -319,3 +319,32 @@ test('22. Regression: ReportBuilder captures git commit SHA', () => {
   assert.ok(report.project.commit);
   assert.match(report.project.commit, /^[0-9a-f]{40}$/);
 });
+
+test('23. Regression: test-runner argument filtering strips Jest flags', async () => {
+  // Dynamically import test-runner module using absolute path to work regardless of dist location
+  const testRunnerPath = path.resolve('scripts/test-runner.js');
+  const { filterTestRunnerArgs } = await import(`file://${testRunnerPath}`);
+
+  const inputArgs = ['--ci', '--maxWorkers=2', '--bail', '--test-name-pattern', 'Clean project', '--unknown-flag', 'some-non-existent-file.js'];
+  const filtered = filterTestRunnerArgs(inputArgs);
+
+  // Jest flags must be stripped
+  assert.ok(!filtered.includes('--ci'));
+  assert.ok(!filtered.includes('--maxWorkers=2'));
+  assert.ok(!filtered.includes('--bail'));
+  assert.ok(!filtered.includes('--unknown-flag'));
+  assert.ok(!filtered.includes('some-non-existent-file.js'));
+
+  // Valid node test runner options preserved
+  assert.ok(filtered.includes('--test-name-pattern'));
+  assert.strictEqual(filtered[filtered.indexOf('--test-name-pattern') + 1], 'Clean project');
+});
+
+test('24. Regression: test-runner rejects zero compiled test files cleanly', async () => {
+  const testRunnerPath = path.resolve('scripts/test-runner.js');
+  const { findTestFiles } = await import(`file://${testRunnerPath}`);
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mg-zero-tests-'));
+  const found = findTestFiles(tempDir);
+  assert.strictEqual(found.length, 0);
+  fs.rmSync(tempDir, { recursive: true, force: true });
+});
