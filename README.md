@@ -53,7 +53,7 @@ npm install
 # Build TypeScript to dist/
 npm run build
 
-# Run all 40 automated tests
+# Run all 101 automated tests
 npm test
 ```
 
@@ -148,17 +148,18 @@ MockGuard is designed with security-first boundaries governed by [`.brain/.work/
 
 ## Verification & Test Suite
 
-MockGuard maintains an automated test suite with **86 passing tests** executed across Node **18.x**, **20.x**, and **22.x** in GitHub Actions:
+MockGuard maintains an automated test suite with **101 passing tests** executed across Node **18.x**, **20.x**, and **22.x** in GitHub Actions:
 
 - **Platform & Runner Acceptance (27 tests)**: CLI parsing, project auto-discovery, monorepo support, process supervisor timeouts, child tree termination, baseline execution, concurrency pools, and report builders.
 - **Static Analysis & Rule Engine (14 tests)**: AST symbol resolution, import alias handling, and P2 rules (`MOCKED_SUT`, `CALL_ONLY_ASSERTION`, `MOCK_ASSERTION`, `NO_ASSERTION`, `UNSUPPORTED_PATTERN`).
 - **AST Mutation Engine (10 tests)**: Deterministic mutant generation across 4 operator categories (`BooleanLiteralFlip`, `ComparisonOperatorReplacement`, `NumericBoundaryMutation`, `PrimitiveReturnMutation`), bounded concurrency, total timeout, and isolated sandbox execution without touching source files.
+- **Attribution & Benchmark Harness (26 tests)**: P3 outcome normalization, P4 per-test evidence correlation, P5 equivalent mutant candidate labeling, P5 flakiness classification, and P6 synthetic benchmark harness.
 - **Git Revision Comparator (5 tests)**: Commit resolution, dirty working tree detection, temporary worktree lifecycle, and delta report generation.
 - **Security & QA Release (19 tests)**: Secret token masking, process timeouts, memory output bounds, environment variable isolation, path traversal rejection, tarball packaging allowlists, and SPDX 2.3 SBOM generation.
 
 ```bash
 npm test
-# ℹ tests 77 | suites 0 | pass 77 | fail 0
+# ℹ tests 101 | suites 0 | pass 101 | fail 0
 ```
 
 ---
