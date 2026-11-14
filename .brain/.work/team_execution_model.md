@@ -19,6 +19,10 @@
 
 The builder who implements a feature is not the sole approver of its security or public claim. Worker 03 reviews execution and release risk. Member 4 can use only approved evidence.
 
+## Worker Domain Isolation & Double Confirmation ("Ask Twice")
+
+Workers must not cross into another worker's assigned domain without completing the two-stage confirmation gate ("Ask Twice") defined in `AGENTS.md` and `.brain/.work/shared/worker_boundary_policy.md`. Any boundary crossover requires two explicit user approvals.
+
 ## Work-in-progress limit
 
 Each builder may have one active integration task and one queued task. New features cannot displace a blocker without a decision-log entry.
