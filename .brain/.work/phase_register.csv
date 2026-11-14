@@ -4,8 +4,8 @@ P1,reproducible foundation,contracts approved,clean fixture baseline and runner,
 P2,static inspection,corpus labels approved,source citations and rules tested,worker_02,worker_03,phase_p2_report.md,PLANNED
 P3,mutation proof,runner stable,replayable killed/survived results,worker_02,worker_01,phase_p3_report.md,PLANNED
 P4,evidence product,mutant schema stable,correlation and reports validated,worker_01,worker_02,phase_p4_report.md,PLANNED
-P5,security and release hardening,threat model reviewed,CI/package/security gates pass,worker_03,worker_01,phase_p5_report.md,PLANNED
+P5,security and release hardening,threat model reviewed,CI/package/security gates pass,worker_03,worker_01,phase_p5_report.md,PASSED
 P6,benchmark and calibration,all paths stable,versioned results and limitations,all,worker_03,phase_p6_report.md,PLANNED
 P7,demo and pitch freeze,verified artifacts available,two rehearsals and deck lock,worker_04,all,phase_p7_report.md,PLANNED
-P8,release candidate,all blockers closed,tagged artifact and provenance,worker_03,all,phase_p8_report.md,PLANNED
+P8,release candidate,all blockers closed,tagged artifact and provenance,worker_03,all,phase_p8_report.md,READY
 P9,post-hackathon production,release candidate exists,operating cadence and support,all,worker_04,phase_p9_report.md,PLANNED

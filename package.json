@@ -21,7 +21,10 @@
     "test": "node scripts/test-runner.js",
     "watch": "tsc -p tsconfig.test.json --watch",
     "verify:package": "node scripts/verify-package.js",
-    "sbom": "node scripts/generate-sbom.js"
+    "sbom": "node scripts/generate-sbom.js",
+    "checksums": "node scripts/generate-checksums.js",
+    "smoke:tarball": "node scripts/smoke-test-tarball.js",
+    "release:check": "node scripts/release-check.js"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

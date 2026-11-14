@@ -1,0 +1,63 @@
+name: MockGuard Release & Provenance
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Perform dry-run without publishing release'
+        required: true
+        default: 'true'
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    name: Build, Audit & Publish Release Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Hardened Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 20.x
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Clean Dependency Installation
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts
+          else
+            npm install --ignore-scripts
+          fi
+
+      - name: Execute Comprehensive Release Check
+        run: node scripts/release-check.js
+
+      - name: Verify Release Checksums & SBOM
+        run: |
+          cd dist
+          sha256sum -c SHA256SUMS.txt
+          test -f mockguard.spdx.json
+          test -f SHA256SUMS.txt
+
+      - name: Create GitHub Release and Attach Artifacts
+        if: startsWith(github.ref, 'refs/tags/v') && github.event.inputs.dry_run != 'true'
+        uses: softprops/action-gh-release@c95fe1489354938d70485c85712916146a8b5b4e # v2.2.1
+        with:
+          files: |
+            dist/*.tgz
+            dist/mockguard.spdx.json
+            dist/SHA256SUMS.txt
+          generate_release_notes: true
+          draft: false
+          prerelease: false

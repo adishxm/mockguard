@@ -9,6 +9,8 @@
 | `phase_p2_report.md` | Static Analysis & AST Rules | PLANNED | Worker 02 |
 | `phase_p3_report.md` | Mutation Engine & Adapter Loop | PLANNED | Worker 02 + 01 |
 | `phase_p4_report.md` | Evidence Product & Correlation | PLANNED | Worker 01 + 02 |
+| [`phase_p5_report.md`](./phase_p5_report.md) | Security Hardening & Packaging Gate | **PASSED** | Worker 03 |
 | `evaluation.md` | Benchmark Results (B0/B1/B2/B3) | TEMPLATE | All |
+| [`phase_p8_report.md`](./phase_p8_report.md) | Release Candidate & Provenance Gate | **READY** | Worker 03 |
 | `production_readiness.md` | Pre-Release Production Readiness | TEMPLATE | Worker 03 |
 | `release_freeze.md` | Final Tagged-Commit Freeze Gate | TEMPLATE | Worker 03 / Worker 04 |
