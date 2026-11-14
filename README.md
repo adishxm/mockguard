@@ -6,7 +6,7 @@
 [![CodeQL Security](https://github.com/adishxm/mockguard/actions/workflows/codeql.yml/badge.svg)](https://github.com/adishxm/mockguard/actions/workflows/codeql.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/Node-%3E%3D18.0.0-green.svg)](package.json)
-[![Tests](https://img.shields.io/badge/Tests-86%20passing-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-101%20passing-brightgreen.svg)](tests/)
 
 MockGuard is a developer tool and CI guardrail built for **HackMatrix Problem Statement #41: "AI-generated tests test the mock, not the code."** It combines static AST mock-pattern analysis with controlled mutation testing to verify whether a passing (green) test suite actually detects regressions in production behavior.
 
