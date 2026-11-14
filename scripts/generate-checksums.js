@@ -32,7 +32,8 @@ export function generateChecksums(projectRoot = process.cwd()) {
     throw new Error(`npm pack failed with code ${packResult.status}:\n${packResult.stderr}`);
   }
 
-  const tarballName = packResult.stdout.trim().split(/\r?\n/).pop()?.trim();
+  const lines = packResult.stdout.trim().split(/\r?\n/).map((l) => l.trim());
+  const tarballName = lines.find((l) => l.endsWith('.tgz')) || lines.pop() || '';
   const tarballPath = path.join(distDir, tarballName);
 
   // 3. Compute SHA256 hashes

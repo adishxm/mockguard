@@ -7,7 +7,8 @@ import { TypeScriptProjectLoader } from '../../src/analysis/project-loader.js';
 import { JestTestAnalyzer } from '../../src/analysis/jest-test-analyzer.js';
 
 function createTempProject(files: Record<string, string>): { dir: string; tsconfigPath: string } {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mg-p1-ast-'));
+  const rawDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mg-p1-ast-'));
+  const dir = fs.realpathSync(rawDir);
   for (const [relPath, content] of Object.entries(files)) {
     const fullPath = path.join(dir, relPath);
     fs.mkdirSync(path.dirname(fullPath), { recursive: true });

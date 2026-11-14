@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { pathToFileURL } from 'node:url';
 
 import { SecretRedactor } from '../../src/artifacts/secret-redactor.js';
 import { BoundedProcessSupervisor } from '../../src/platform/process-supervisor.js';
@@ -94,9 +95,8 @@ test('Adversarial 5: Release Checksums file verifies against SHA256 digests', as
   const checksumFilePath = path.resolve('dist', 'SHA256SUMS.txt');
   if (!fs.existsSync(checksumFilePath)) {
     // Dynamically generate checksums if not yet generated
-    const { generateChecksums } = await import(
-      new URL('../../scripts/generate-checksums.js', import.meta.url).href
-    );
+    const scriptPath = path.resolve('scripts/generate-checksums.js');
+    const { generateChecksums } = await import(pathToFileURL(scriptPath).href);
     generateChecksums();
   }
 

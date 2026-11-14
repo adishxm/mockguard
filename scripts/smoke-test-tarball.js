@@ -26,7 +26,8 @@ export function smokeTestTarball(projectRoot = process.cwd()) {
       throw new Error(`npm pack failed with code ${packResult.status}:\n${packResult.stderr}`);
     }
 
-    const tarballName = packResult.stdout.trim().split(/\r?\n/).pop()?.trim();
+    const lines = packResult.stdout.trim().split(/\r?\n/).map((l) => l.trim());
+    const tarballName = lines.find((l) => l.endsWith('.tgz')) || lines.pop() || '';
     if (!tarballName) {
       throw new Error(`Could not determine packed tarball filename from output: ${packResult.stdout}`);
     }
