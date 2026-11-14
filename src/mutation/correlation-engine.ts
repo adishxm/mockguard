@@ -126,10 +126,24 @@ export class MutationCorrelationEngine {
         continue;
       }
 
+      // Check that this test block actually invokes the resolved SUT path
+      const invokesSut = associatedBlock.invocations.some(
+        inv => inv.resolution.status === 'resolved'
+      );
+      if (sutTarget && !invokesSut) {
+        abstentions.push({
+          reason: 'MISSING_SUT_PATH_MATCH',
+          findingId: finding.id,
+          testId: associatedBlock.id,
+          details: `Test block '${associatedBlock.name}' does not invoke the resolved SUT path '${sutTarget.canonicalSymbolName}'.`,
+        });
+        continue;
+      }
+
       for (const mutant of mutants) {
         const normalizedMutantPath = this.normalizePath(mutant.file);
 
-        // Guardrail 1: Canonical SUT path match
+        // Guardrail 1a: Canonical SUT file path match
         if (normalizedSutPath && !normalizedMutantPath.endsWith(normalizedSutPath)) {
           abstentions.push({
             reason: 'MISSING_SUT_PATH_MATCH',
@@ -139,6 +153,35 @@ export class MutationCorrelationEngine {
             details: `Mutant ${mutant.id} file '${mutant.file}' does not match canonical SUT path '${sutTarget?.canonicalFilePath}'.`,
           });
           continue;
+        }
+
+        // Guardrail 1b: Mutant location inside SUT declaration span
+        if (sutTarget) {
+          if (!sutTarget.declarationSpan) {
+            abstentions.push({
+              reason: 'MISSING_SUT_PATH_MATCH',
+              findingId: finding.id,
+              mutantId: mutant.id,
+              testId: associatedBlock.id,
+              details: `Canonical SUT declaration span could not be established for symbol '${sutTarget.canonicalSymbolName}'.`,
+            });
+            continue;
+          }
+
+          const inSpan =
+            mutant.startLine >= sutTarget.declarationSpan.startLine &&
+            mutant.startLine <= sutTarget.declarationSpan.endLine;
+
+          if (!inSpan) {
+            abstentions.push({
+              reason: 'MISSING_SUT_PATH_MATCH',
+              findingId: finding.id,
+              mutantId: mutant.id,
+              testId: associatedBlock.id,
+              details: `Mutant ${mutant.id} at line ${mutant.startLine} is outside canonical SUT declaration span (${sutTarget.declarationSpan.startLine}-${sutTarget.declarationSpan.endLine}) for symbol '${sutTarget.canonicalSymbolName}'.`,
+            });
+            continue;
+          }
         }
 
         // Guardrail 2: Coverage must be present
@@ -210,9 +253,9 @@ export class MutationCorrelationEngine {
         }
       }
 
-      // 2. Direct ID or Name match
+      // 2. Direct exact ID or exact Name match (no substring heuristics)
       const matchingBlocks = testBlocks.filter(
-        b => b.id === strykerId || b.name === strykerId || strykerId.includes(b.name)
+        b => b.id === strykerId || b.name === strykerId
       );
 
       if (matchingBlocks.length === 1) {
