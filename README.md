@@ -131,63 +131,68 @@ npm run demo:cli
 
 ```mermaid
 flowchart TD
-    classDef available fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
-    classDef toVerify fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#f57f17;
-    classDef planned fill:#fff3e0,stroke:#f57c00,stroke-width:2px,stroke-dasharray: 4 4,color:#e65100;
-    classDef advisory fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,stroke-dasharray: 4 4,color:#4a148c;
+    %% Visual High-Contrast Palette
+    classDef available fill:#ecfdf5,stroke:#059669,stroke-width:2px,color:#064e3b;
+    classDef toVerify fill:#fefce8,stroke:#ca8a04,stroke-width:2px,color:#713f12;
+    classDef planned fill:#fff7ed,stroke:#ea580c,stroke-width:2px,stroke-dasharray: 4 4,color:#7c2d12;
+    classDef advisory fill:#faf5ff,stroke:#9333ea,stroke-width:2px,stroke-dasharray: 4 4,color:#581c87;
 
-    subgraph S1 ["1. Who uses it"]
-        QA["QA engineer<br/>checks critical modules"]:::available
-        Judge["Hackathon judge<br/>runs demo:cli"]:::available
-        Dev["Developer<br/>AI wrote my tests"]:::available
-        Maintainer["Open-source maintainer<br/>reviews AI-written PRs (planned)"]:::planned
-        CI["Team CI pipeline<br/>gates changed files (to verify)"]:::toVerify
+    %% 1. Target Personas
+    subgraph S1 [" 👥 1. Who Uses It "]
+        direction LR
+        QA["🛡️ QA Engineer<br/><b>Checks critical modules</b>"]:::available
+        Judge["⚖️ Hackathon Judge<br/><b>Validates live demo:cli</b>"]:::available
+        Dev["💻 Developer<br/><b>Tests AI-generated suites</b>"]:::available
+        Maintainer["🌐 OS Maintainer<br/><b>Reviews PR contributions</b> <i>(planned)</i>"]:::planned
+        CI["🤖 CI Pipeline<br/><b>Gates pull requests</b> <i>(to verify)</i>"]:::toVerify
     end
 
-    subgraph S2 ["2. Install, from a clone"]
-        Clone["Install from a clone<br/>(no npm release yet)<br/>git clone, npm install, npm run build<br/>run: npm run demo:cli"]:::available
+    %% 2. Setup
+    subgraph S2 [" 📦 2. Clone & Build "]
+        Clone["<b>Clone & Local Setup</b><br/><code>git clone &amp;&amp; npm install &amp;&amp; npm run build</code>"]:::available
     end
 
-    subgraph S3 ["3. Run a command"]
-        CmdCompare["compare --base HEAD~1<br/>Git revision diff"]:::available
-        CmdBaseline["baseline [target]<br/>Jest run only"]:::available
-        CmdVerify["verify [target]<br/>static scan + bounded mutation run"]:::available
+    %% 3. CLI Commands
+    subgraph S3 [" ⚡ 3. CLI Execution Commands "]
+        direction LR
+        CmdCompare["🔀 <b>compare</b><br/><code>mockguard compare --base HEAD~1</code><br/>Git revision diff"]:::available
+        CmdBaseline["📋 <b>baseline</b><br/><code>mockguard baseline [target]</code><br/>Jest baseline run only"]:::available
+        CmdVerify["🛡️ <b>verify</b> (Default)<br/><code>mockguard verify [target]</code><br/>Static scan + Bounded mutation"]:::available
     end
 
-    subgraph S4 ["4. Inside the tool (verify)"]
-        PhaseBaseline["Baseline Jest run<br/>original suite must pass"]:::available
-        PhaseStatic["Static mock-pattern scan<br/>P2 rules (MOCK_ASSERTION, MOCKED_SUT, ...)"]:::available
-        PhaseMutation["Deterministic AST mutants<br/>on chosen source files<br/>4 operator classes"]:::available
-        PhaseAttribution["Attribution: surviving mutants<br/>matched to weak tests (P3/P4)<br/>P5 equivalence + flakiness<br/>P6 benchmark"]:::available
+    %% 4. Tool Engine
+    subgraph S4 [" ⚙️ 4. Inside the Tool (Verify Pipeline) "]
+        PhaseBaseline["<b>Phase 1: Baseline Jest Run</b><br/>Original suite must pass (100% green)"]:::available
+        PhaseStatic["<b>Phase 2: Static AST Mock Scan</b><br/>Detects MOCK_ASSERTION, MOCKED_SUT, etc."]:::available
+        PhaseMutation["<b>Phase 3: Deterministic AST Mutations</b><br/>4 operator classes on SUT in isolated sandbox"]:::available
+        PhaseAttribution["<b>Phase 4: Attribution &amp; Mutation Proof</b><br/>Matches surviving mutants to weak test blocks"]:::available
     end
 
-    subgraph S5 ["5. What you get"]
-        OutTerminal["Terminal summary"]:::available
-        OutJSON["JSON evidence report<br/>--format json --out"]:::available
-        RevReport["Reviewer reads the report"]:::available
-        CIPassFail["CI pass / fail gate<br/>(to verify exit code)"]:::toVerify
-        SarifView["SARIF code-scanning view<br/>(planned)"]:::planned
+    %% 5. Deliverables & Gate
+    subgraph S5 [" 📊 5. Output Deliverables &amp; Gating "]
+        OutTerminal["🖥️ <b>Terminal Summary</b><br/>Instant score, findings &amp; verdict"]:::available
+        OutJSON["📁 <b>JSON Evidence Report</b><br/>Redacted secrets &amp; run metadata"]:::available
+        RevReport["👁️ <b>Reviewer Decision</b><br/>Inspect proof of test effectiveness"]:::available
+        CIPassFail["🚦 <b>CI Pass / Fail Gate</b><br/>Blocks PRs with surviving mutants"]:::toVerify
+        SarifView["📑 <b>SARIF Security View</b><br/>Code scanning annotations <i>(planned)</i>"]:::planned
     end
 
-    subgraph S6 ["6. Follow up"]
-        GeminiAdv["Optional Gemini advisory<br/>npm run gemini:advisory<br/>off by default, never decides verdicts"]:::advisory
-        DryRun["explain / improve --dry-run<br/>design only (planned)"]:::planned
-        HumanFix["Human writes or reviews the test<br/>no auto-edits"]:::available
+    %% 6. Remediation & Loop
+    subgraph S6 [" 🔄 6. Actionable Follow-Up &amp; Fix Loop "]
+        GeminiAdv["🤖 <b>Google Gemini Advisory</b> (Compulsory/Opt-in)<br/>Synthesizes behavioral assertions that kill mutants"]:::advisory
+        DryRun["💡 <b>explain / improve --dry-run</b><br/>Interactive test repair <i>(planned)</i>"]:::planned
+        HumanFix["✍️ <b>Human Engineer Applies Fix</b><br/>Asserts real domain outcomes (no auto-edits)"]:::available
     end
 
-    QA --> Clone
-    Judge --> Clone
-    Dev --> Clone
-    Maintainer -.-> Clone
-    CI --> Clone
-
+    %% Clean Connecting Edges
+    S1 --> Clone
     Clone --> CmdCompare
     Clone --> CmdBaseline
     Clone --> CmdVerify
 
     CmdCompare --> OutTerminal
     CmdCompare --> OutJSON
-    CmdBaseline -->|"stops after the Jest run"| OutTerminal
+    CmdBaseline -->|"Stops after Jest baseline"| OutTerminal
     CmdVerify --> PhaseBaseline
 
     PhaseBaseline --> PhaseStatic
@@ -204,20 +209,20 @@ flowchart TD
     OutJSON -.-> SarifView
 
     RevReport --> GeminiAdv
-    RevReport -.-> DryRun
     CIPassFail --> GeminiAdv
+    RevReport -.-> DryRun
 
     GeminiAdv --> HumanFix
     DryRun -.-> HumanFix
 
-    HumanFix -->|"rerun verify"| CmdVerify
+    HumanFix -->|"Rerun verification"| CmdVerify
 ```
 
 > **Workflow Legend**:
 > - 🟩 **Green (Solid)**: Available in repository now
 > - 🟨 **Yellow (Solid)**: To verify / CI validation
 > - 🟧 **Orange (Dashed)**: Planned / roadmap extension
-> - 🟪 **Purple (Dashed)**: Optional advisory engine (Google Gemini)
+> - 🟪 **Purple (Dashed)**: Optional / compulsory advisory engine (Google Gemini)
 
 ---
 
