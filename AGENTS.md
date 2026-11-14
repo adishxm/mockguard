@@ -38,7 +38,17 @@ Even if the user confirms Step 1, the agent must ask a **second time** before an
 
 ---
 
-## 3. Remote Push Policy
-- Agents must **never** execute `git push` autonomously or unprompted.
+## 3. Remote Push & Synchronization Policy
+
+### Rule A: Explicit User Approval Required
+- Agents and workers must **never** execute `git push` autonomously or unprompted.
 - `git push` requires an explicit, direct user prompt instructing the agent to push.
+
+### Rule B: Mandatory Pull & Remote Check Before Push ("Pull Before Push")
+- Before any push command is executed, the agent or worker **must check and pull any remote updates** from other workers:
+  1. Execute `git fetch origin` to inspect remote branches and incoming commits.
+  2. If remote has new commits from other workers, run `git pull --rebase origin <branch>` to integrate them cleanly.
+  3. Verify that local changes do not regress or conflict with other workers' incoming work.
+  4. Only when the working tree is fully synchronized, clean, and tests pass may the push proceed.
+- Force pushing (`--force`, `-f`, `--force-with-lease`) is strictly prohibited.
 

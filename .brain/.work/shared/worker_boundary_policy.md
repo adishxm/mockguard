@@ -22,3 +22,12 @@ If any request involves an agent crossing from Worker A's territory into Worker 
 
 No automated bypass of this double gate is permitted.
 
+---
+
+## Remote Synchronization & "Pull Before Push" Gate
+
+To prevent overwriting another worker's contributions:
+1. **Mandatory Remote Check**: Every worker/agent MUST check for remote updates (`git fetch origin`) prior to any push.
+2. **Rebase & Verification**: If new commits exist from other workers, pull and rebase (`git pull --rebase origin <branch>`), resolving conflicts cleanly and verifying test suite health before pushing.
+3. **No Force Pushes**: Destructive force pushes are completely prohibited across all branches.
+
